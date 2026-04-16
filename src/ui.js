@@ -551,3 +551,180 @@ function showToast(msg, type = "success") {
 //  INIT
 // ─────────────────────────────────────────────────
 renderTypoPreview();
+
+// ─────────────────────────────────────────────────
+//  SPACING CHECKER
+// ─────────────────────────────────────────────────
+(function () {
+  // ── State ──
+  let spHasSelection = false;
+  let spResults = [];
+
+  // ── DOM refs ──
+  const btnScan        = document.getElementById('btn-scan');
+  const spEmptyState   = document.getElementById('spacing-empty-state');
+  const spResultsEl    = document.getElementById('spacing-results');
+  const spStatusDot    = document.getElementById('spacing-status-dot');
+  const spStatusText   = document.getElementById('spacing-status-text');
+  const spSummaryEl    = document.getElementById('spacing-summary');
+  const spListAll      = document.getElementById('spacing-list-all');
+  const spListIssues   = document.getElementById('spacing-list-issues');
+  const spBadgeAll     = document.getElementById('spacing-badge-all');
+  const spBadgeIssues  = document.getElementById('spacing-badge-issues');
+  const spEmptyIssues  = document.getElementById('spacing-empty-issues');
+
+  // ── Utilities ──
+  function truncate(str, max = 20) {
+    return str.length > max ? str.slice(0, max - 1) + '…' : str;
+  }
+
+  // ── Messages → plugin ──
+  function sendScan()             { parent.postMessage({ pluginMessage: { type: 'scan' } }, '*'); }
+  function sendFocus(a, b)        { parent.postMessage({ pluginMessage: { type: 'focus', fromId: a, toId: b } }, '*'); }
+  function sendFix(pId, val)      { parent.postMessage({ pluginMessage: { type: 'fix', parentId: pId, suggestedValue: val } }, '*'); }
+  function sendCheckSelection()   { parent.postMessage({ pluginMessage: { type: 'check-selection' } }, '*'); }
+
+  // ── Selection status ──
+  function updateSelectionStatus(active, count) {
+    spHasSelection = active;
+    btnScan.disabled = !active;
+    if (active) {
+      spStatusDot.classList.add('active');
+      spStatusText.textContent = count === 1 ? '1 frame selected' : `${count} frames selected`;
+    } else {
+      spStatusDot.classList.remove('active');
+      spStatusText.textContent = 'No selection — select a frame first';
+    }
+  }
+
+  // ── Render spacing item card ──
+  function renderSpacingItem(record, isIssue) {
+    const div = document.createElement('div');
+    div.className = `spacing-item ${isIssue ? 'is-issue' : 'is-valid'}`;
+
+    const srcLabel = record.source === 'auto-layout' ? 'AUTO' : 'MANUAL';
+    const srcClass = record.source === 'auto-layout' ? '' : 'manual';
+
+    const valueHTML = record.isValid
+      ? `<span class="sp-value-pill valid">${record.spacing}px</span>`
+      : `<span class="sp-value-pill invalid">${record.spacing}px</span><span class="sp-value-arrow">→</span><span class="sp-value-suggest">${record.suggestedValue}px</span>`;
+
+    const focusBtn = `<button class="btn-sp-action btn-sp-focus">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M1 3.5V1.5A.5.5 0 0 1 1.5 1H3.5M6.5 1H8.5A.5.5 0 0 1 9 1.5V3.5M9 6.5V8.5A.5.5 0 0 1 8.5 9H6.5M3.5 9H1.5A.5.5 0 0 1 1 8.5V6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>Focus</button>`;
+
+    let actionBtn = '';
+    if (record.source === 'auto-layout' && isIssue) {
+      actionBtn = `<button class="btn-sp-action btn-sp-fix" data-parent-id="${record.parentId}" data-suggested="${record.suggestedValue}">✦ Fix to ${record.suggestedValue}px</button>`;
+    } else if (isIssue) {
+      actionBtn = `<button class="btn-sp-action btn-sp-suggestion" disabled>Suggestion only</button>`;
+    }
+
+    div.innerHTML = `
+      <div class="sp-item-top">
+        <div class="sp-item-meta">
+          <span class="sp-badge-source ${srcClass}">${srcLabel}</span>
+          <span class="sp-badge-axis">${record.axis}</span>
+        </div>
+        <div class="sp-item-value">${valueHTML}</div>
+      </div>
+      <div class="sp-item-layers">
+        <span class="sp-layer-name" title="${record.fromName}">${truncate(record.fromName)}</span>
+        <span class="sp-layer-sep">→</span>
+        <span class="sp-layer-name" title="${record.toName}">${truncate(record.toName)}</span>
+      </div>
+      <div class="sp-item-actions">${focusBtn}${actionBtn}</div>
+    `;
+
+    div.querySelector('.btn-sp-focus').addEventListener('click', () => sendFocus(record.fromId, record.toId));
+
+    const fixBtn = div.querySelector('.btn-sp-fix');
+    if (fixBtn) {
+      fixBtn.addEventListener('click', () => sendFix(record.parentId, record.suggestedValue));
+    }
+
+    return div;
+  }
+
+  // ── Render full results ──
+  function renderSpacingResults(records) {
+    spResults = records;
+    const issues = records.filter(r => !r.isValid);
+    const valid  = records.filter(r => r.isValid);
+
+    spEmptyState.style.display = 'none';
+    spResultsEl.style.display  = 'block';
+
+    // Summary
+    spSummaryEl.innerHTML = `
+      <div class="sp-stat-card">
+        <div class="sp-stat-value">${records.length}</div>
+        <div class="sp-stat-label">Total Spacing</div>
+      </div>
+      <div class="sp-stat-card">
+        <div class="sp-stat-value ${issues.length > 0 ? 'warn' : 'success'}">${issues.length}</div>
+        <div class="sp-stat-label">Off-Grid Issues</div>
+      </div>
+    `;
+
+    // Issues section
+    spBadgeIssues.textContent = issues.length;
+    spBadgeIssues.className   = `spacing-section-badge ${issues.length > 0 ? 'badge-warn' : 'badge-ok'}`;
+    spListIssues.innerHTML    = '';
+    if (issues.length === 0) {
+      spEmptyIssues.style.display = 'block';
+    } else {
+      spEmptyIssues.style.display = 'none';
+      issues.forEach(r => spListIssues.appendChild(renderSpacingItem(r, true)));
+    }
+
+    // All section
+    spBadgeAll.textContent = records.length;
+    spListAll.innerHTML    = '';
+    records.forEach(r => spListAll.appendChild(renderSpacingItem(r, !r.isValid)));
+  }
+
+  // ── Scan button ──
+  btnScan.addEventListener('click', () => {
+    btnScan.disabled = true;
+    btnScan.textContent = 'Scanning…';
+    sendScan();
+  });
+
+  // ── Receive messages from code.ts ──
+  // Piggyback on the existing onmessage handler
+  const _originalOnMessage = window.onmessage;
+  window.onmessage = (event) => {
+    const msg = event.data.pluginMessage;
+    if (!msg) return;
+
+    // Pass to existing handler first
+    if (_originalOnMessage) _originalOnMessage.call(window, event);
+
+    // Spacing-specific messages
+    if (msg.type === 'scan-result') {
+      btnScan.disabled = !spHasSelection;
+      btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
+      renderSpacingResults(msg.records);
+    } else if (msg.type === 'no-selection') {
+      btnScan.disabled = false;
+      btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
+    } else if (msg.type === 'selection-status') {
+      updateSelectionStatus(msg.hasSelection, msg.count);
+    } else if (msg.type === 'fix-done') {
+      // Mark button as fixed
+      const allFixBtns = document.querySelectorAll(`.btn-sp-fix[data-parent-id="${msg.parentId}"]`);
+      allFixBtns.forEach(b => {
+        b.classList.add('fixed');
+        b.textContent = '✓ Fixed';
+        b.disabled = true;
+      });
+      showToast('✓ Spacing fixed!', 'success');
+    }
+  };
+
+  // ── Init: ask plugin for current selection ──
+  sendCheckSelection();
+})();
+

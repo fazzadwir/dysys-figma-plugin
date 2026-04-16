@@ -667,6 +667,385 @@ input[type="text"]:focus {
   border-radius: 4px;
 }
 
+/* ─────────────────────────────────────────────────
+   SPACING CHECKER TAB
+   ───────────────────────────────────────────────── */
+
+/* CSS vars specific to spacing (extends root palette) */
+:root {
+  --success-bg:      rgba(74, 222, 128, 0.08);
+  --success-border:  rgba(74, 222, 128, 0.2);
+  --warn:            #f59e0b;
+  --warn-bg:         rgba(245, 158, 11, 0.08);
+  --warn-border:     rgba(245, 158, 11, 0.25);
+}
+
+/* ── Selection status bar ── */
+.spacing-sel-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.spacing-sel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.spacing-sel-dot.active {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+/* ── Empty state ── */
+.spacing-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  gap: 10px;
+}
+
+.spacing-empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.spacing-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.spacing-empty-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 220px;
+}
+
+/* ── Summary stats ── */
+.spacing-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sp-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.sp-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.sp-stat-value.warn    { color: var(--warn); }
+.sp-stat-value.success { color: var(--success); }
+
+.sp-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* ── Sections ── */
+.spacing-section {
+  margin-bottom: 14px;
+}
+
+.spacing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.spacing-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.spacing-section-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.spacing-section-badge.badge-warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
+
+.spacing-section-badge.badge-ok {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+}
+
+/* ── Spacing item cards ── */
+.spacing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spacing-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  transition: border-color 0.15s, background 0.15s;
+  border-left: 3px solid var(--border);
+}
+
+.spacing-item:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.spacing-item.is-issue { border-left-color: var(--warn); }
+.spacing-item.is-valid { border-left-color: var(--success); opacity: 0.75; }
+
+.sp-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.sp-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sp-badge-source {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(124,106,247,0.2);
+}
+
+.sp-badge-source.manual {
+  background: rgba(138,138,154,0.1);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.sp-badge-axis {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sp-item-value {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sp-value-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+.sp-value-pill.valid {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.sp-value-pill.invalid {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border: 1px solid var(--warn-border);
+}
+
+.sp-value-arrow  { font-size: 10px; color: var(--text-muted); }
+.sp-value-suggest {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+.sp-item-layers {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.sp-layer-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.sp-layer-sep { color: var(--text-muted); flex-shrink: 0; font-size: 10px; }
+
+.sp-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sp-action {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.btn-sp-action:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.12);
+  color: var(--text-primary);
+}
+
+.btn-sp-fix {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.btn-sp-fix:hover {
+  background: rgba(245,158,11,0.15);
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.btn-sp-fix.fixed {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+  cursor: default;
+}
+
+.btn-sp-suggestion {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.btn-sp-suggestion:hover {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+/* ── Empty issues section ── */
+.spacing-empty-section {
+  text-align: center;
+  padding: 14px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* ── Scan button (inside tab panel) ── */
+.btn-scan {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, #7c6af7 0%, #9b6af7 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-shadow: 0 4px 16px rgba(124, 106, 247, 0.3);
+  letter-spacing: 0.1px;
+}
+
+.btn-scan:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8e7ef9 0%, #aa7ef9 100%);
+  box-shadow: 0 6px 20px rgba(124, 106, 247, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-scan:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(124, 106, 247, 0.25);
+}
+
+.btn-scan:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
     </style>
   </head>
   <body>
@@ -683,14 +1062,21 @@ input[type="text"]:focus {
             id="tab-colors"
             onclick="switchTab('colors')"
           >
-            <span class="tab-icon"></span> Colors
+            <span class="tab-icon">🎨</span> Colors
           </button>
           <button
             class="tab-btn"
             id="tab-typography"
             onclick="switchTab('typography')"
           >
-            <span class="tab-icon"></span> Typography
+            <span class="tab-icon">Tt</span> Typography
+          </button>
+          <button
+            class="tab-btn"
+            id="tab-spacing"
+            onclick="switchTab('spacing')"
+          >
+            <span class="tab-icon">⊞</span> Spacing
           </button>
         </div>
       </div>
@@ -826,6 +1212,73 @@ input[type="text"]:focus {
             ✦ Generate &amp; Save to Styles
           </button>
         </div>
+
+        <!-- ═══════════════════════════════════════ SPACING TAB ═══ -->
+        <div class="tab-panel" id="panel-spacing">
+
+          <!-- Selection status -->
+          <div class="spacing-sel-bar">
+            <div class="spacing-sel-dot" id="spacing-status-dot"></div>
+            <span id="spacing-status-text">No selection — select a frame first</span>
+          </div>
+
+          <!-- Empty State -->
+          <div class="spacing-empty" id="spacing-empty-state">
+            <div class="spacing-empty-icon">
+              <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+                <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                <rect x="28" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                <rect x="4" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                <rect x="28" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                <line x1="20" y1="12" x2="28" y2="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <line x1="20" y1="36" x2="28" y2="36" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <line x1="12" y1="20" x2="12" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                <line x1="36" y1="20" x2="36" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              </svg>
+            </div>
+            <div class="spacing-empty-title">Select a frame to start</div>
+            <div class="spacing-empty-desc">
+              Select any frame or container, then click
+              <strong>Scan Frame</strong> to detect spacing issues.
+            </div>
+          </div>
+
+          <!-- Results -->
+          <div id="spacing-results" style="display:none">
+            <div class="spacing-summary" id="spacing-summary"></div>
+
+            <div class="spacing-section" id="spacing-section-issues">
+              <div class="spacing-section-header">
+                <span class="spacing-section-title">Off-Grid Issues</span>
+                <span class="spacing-section-badge badge-warn" id="spacing-badge-issues">0</span>
+              </div>
+              <div class="spacing-empty-section" id="spacing-empty-issues" style="display:none">
+                ✓ All spacing values are on the 8pt grid
+              </div>
+              <div class="spacing-list" id="spacing-list-issues"></div>
+            </div>
+
+            <div class="spacing-section" id="spacing-section-all">
+              <div class="spacing-section-header">
+                <span class="spacing-section-title">All Spacing</span>
+                <span class="spacing-section-badge" id="spacing-badge-all">0</span>
+              </div>
+              <div class="spacing-list" id="spacing-list-all"></div>
+            </div>
+          </div>
+
+          <!-- Scan Button -->
+          <button class="btn-scan" id="btn-scan" disabled>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/>
+            </svg>
+            Scan Frame
+          </button>
+
+        </div>
+        <!-- /panel-spacing -->
+
       </div>
       <!-- /content -->
     </div>
@@ -1388,6 +1841,183 @@ function showToast(msg, type = "success") {
 //  INIT
 // ─────────────────────────────────────────────────
 renderTypoPreview();
+
+// ─────────────────────────────────────────────────
+//  SPACING CHECKER
+// ─────────────────────────────────────────────────
+(function () {
+  // ── State ──
+  let spHasSelection = false;
+  let spResults = [];
+
+  // ── DOM refs ──
+  const btnScan        = document.getElementById('btn-scan');
+  const spEmptyState   = document.getElementById('spacing-empty-state');
+  const spResultsEl    = document.getElementById('spacing-results');
+  const spStatusDot    = document.getElementById('spacing-status-dot');
+  const spStatusText   = document.getElementById('spacing-status-text');
+  const spSummaryEl    = document.getElementById('spacing-summary');
+  const spListAll      = document.getElementById('spacing-list-all');
+  const spListIssues   = document.getElementById('spacing-list-issues');
+  const spBadgeAll     = document.getElementById('spacing-badge-all');
+  const spBadgeIssues  = document.getElementById('spacing-badge-issues');
+  const spEmptyIssues  = document.getElementById('spacing-empty-issues');
+
+  // ── Utilities ──
+  function truncate(str, max = 20) {
+    return str.length > max ? str.slice(0, max - 1) + '…' : str;
+  }
+
+  // ── Messages → plugin ──
+  function sendScan()             { parent.postMessage({ pluginMessage: { type: 'scan' } }, '*'); }
+  function sendFocus(a, b)        { parent.postMessage({ pluginMessage: { type: 'focus', fromId: a, toId: b } }, '*'); }
+  function sendFix(pId, val)      { parent.postMessage({ pluginMessage: { type: 'fix', parentId: pId, suggestedValue: val } }, '*'); }
+  function sendCheckSelection()   { parent.postMessage({ pluginMessage: { type: 'check-selection' } }, '*'); }
+
+  // ── Selection status ──
+  function updateSelectionStatus(active, count) {
+    spHasSelection = active;
+    btnScan.disabled = !active;
+    if (active) {
+      spStatusDot.classList.add('active');
+      spStatusText.textContent = count === 1 ? '1 frame selected' : `${count} frames selected`;
+    } else {
+      spStatusDot.classList.remove('active');
+      spStatusText.textContent = 'No selection — select a frame first';
+    }
+  }
+
+  // ── Render spacing item card ──
+  function renderSpacingItem(record, isIssue) {
+    const div = document.createElement('div');
+    div.className = `spacing-item ${isIssue ? 'is-issue' : 'is-valid'}`;
+
+    const srcLabel = record.source === 'auto-layout' ? 'AUTO' : 'MANUAL';
+    const srcClass = record.source === 'auto-layout' ? '' : 'manual';
+
+    const valueHTML = record.isValid
+      ? `<span class="sp-value-pill valid">${record.spacing}px</span>`
+      : `<span class="sp-value-pill invalid">${record.spacing}px</span><span class="sp-value-arrow">→</span><span class="sp-value-suggest">${record.suggestedValue}px</span>`;
+
+    const focusBtn = `<button class="btn-sp-action btn-sp-focus">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M1 3.5V1.5A.5.5 0 0 1 1.5 1H3.5M6.5 1H8.5A.5.5 0 0 1 9 1.5V3.5M9 6.5V8.5A.5.5 0 0 1 8.5 9H6.5M3.5 9H1.5A.5.5 0 0 1 1 8.5V6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>Focus</button>`;
+
+    let actionBtn = '';
+    if (record.source === 'auto-layout' && isIssue) {
+      actionBtn = `<button class="btn-sp-action btn-sp-fix" data-parent-id="${record.parentId}" data-suggested="${record.suggestedValue}">✦ Fix to ${record.suggestedValue}px</button>`;
+    } else if (isIssue) {
+      actionBtn = `<button class="btn-sp-action btn-sp-suggestion" disabled>Suggestion only</button>`;
+    }
+
+    div.innerHTML = `
+      <div class="sp-item-top">
+        <div class="sp-item-meta">
+          <span class="sp-badge-source ${srcClass}">${srcLabel}</span>
+          <span class="sp-badge-axis">${record.axis}</span>
+        </div>
+        <div class="sp-item-value">${valueHTML}</div>
+      </div>
+      <div class="sp-item-layers">
+        <span class="sp-layer-name" title="${record.fromName}">${truncate(record.fromName)}</span>
+        <span class="sp-layer-sep">→</span>
+        <span class="sp-layer-name" title="${record.toName}">${truncate(record.toName)}</span>
+      </div>
+      <div class="sp-item-actions">${focusBtn}${actionBtn}</div>
+    `;
+
+    div.querySelector('.btn-sp-focus').addEventListener('click', () => sendFocus(record.fromId, record.toId));
+
+    const fixBtn = div.querySelector('.btn-sp-fix');
+    if (fixBtn) {
+      fixBtn.addEventListener('click', () => sendFix(record.parentId, record.suggestedValue));
+    }
+
+    return div;
+  }
+
+  // ── Render full results ──
+  function renderSpacingResults(records) {
+    spResults = records;
+    const issues = records.filter(r => !r.isValid);
+    const valid  = records.filter(r => r.isValid);
+
+    spEmptyState.style.display = 'none';
+    spResultsEl.style.display  = 'block';
+
+    // Summary
+    spSummaryEl.innerHTML = `
+      <div class="sp-stat-card">
+        <div class="sp-stat-value">${records.length}</div>
+        <div class="sp-stat-label">Total Spacing</div>
+      </div>
+      <div class="sp-stat-card">
+        <div class="sp-stat-value ${issues.length > 0 ? 'warn' : 'success'}">${issues.length}</div>
+        <div class="sp-stat-label">Off-Grid Issues</div>
+      </div>
+    `;
+
+    // Issues section
+    spBadgeIssues.textContent = issues.length;
+    spBadgeIssues.className   = `spacing-section-badge ${issues.length > 0 ? 'badge-warn' : 'badge-ok'}`;
+    spListIssues.innerHTML    = '';
+    if (issues.length === 0) {
+      spEmptyIssues.style.display = 'block';
+    } else {
+      spEmptyIssues.style.display = 'none';
+      issues.forEach(r => spListIssues.appendChild(renderSpacingItem(r, true)));
+    }
+
+    // All section
+    spBadgeAll.textContent = records.length;
+    spListAll.innerHTML    = '';
+    records.forEach(r => spListAll.appendChild(renderSpacingItem(r, !r.isValid)));
+  }
+
+  // ── Scan button ──
+  btnScan.addEventListener('click', () => {
+    btnScan.disabled = true;
+    btnScan.textContent = 'Scanning…';
+    sendScan();
+  });
+
+  // ── Receive messages from code.ts ──
+  // Piggyback on the existing onmessage handler
+  const _originalOnMessage = window.onmessage;
+  window.onmessage = (event) => {
+    const msg = event.data.pluginMessage;
+    if (!msg) return;
+
+    // Pass to existing handler first
+    if (_originalOnMessage) _originalOnMessage.call(window, event);
+
+    // Spacing-specific messages
+    if (msg.type === 'scan-result') {
+      btnScan.disabled = !spHasSelection;
+      btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
+      renderSpacingResults(msg.records);
+    } else if (msg.type === 'no-selection') {
+      btnScan.disabled = false;
+      btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
+    } else if (msg.type === 'selection-status') {
+      updateSelectionStatus(msg.hasSelection, msg.count);
+    } else if (msg.type === 'fix-done') {
+      // Mark button as fixed
+      const allFixBtns = document.querySelectorAll(`.btn-sp-fix[data-parent-id="${msg.parentId}"]`);
+      allFixBtns.forEach(b => {
+        b.classList.add('fixed');
+        b.textContent = '✓ Fixed';
+        b.disabled = true;
+      });
+      showToast('✓ Spacing fixed!', 'success');
+    }
+  };
+
+  // ── Init: ask plugin for current selection ──
+  sendCheckSelection();
+})();
+
 
     </script>
   </body>

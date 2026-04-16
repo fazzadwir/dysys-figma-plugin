@@ -1,7 +1,7 @@
 // DySys — Design System Generator Plugin
 // Main thread: has access to the Figma document via the figma global object.
 
-figma.showUI(__html__, { width: 440, height: 560 });
+figma.showUI(__html__, { width: 440, height: 580 });
 
 // ─────────────────────────────────────────────────
 //  TYPES
@@ -19,6 +19,20 @@ interface TypoStyle {
   styleName: string;
 }
 
+interface SpacingRecord {
+  parentId: string;
+  parentName: string;
+  axis: 'horizontal' | 'vertical';
+  fromId: string;
+  fromName: string;
+  toId: string;
+  toName: string;
+  spacing: number;
+  isValid: boolean;
+  suggestedValue: number;
+  source: 'auto-layout' | 'manual';
+}
+
 // ─────────────────────────────────────────────────
 //  UTILS — HEX → RGB
 // ─────────────────────────────────────────────────
@@ -32,18 +46,112 @@ function hexToRgb(hex: string): RGB {
 }
 
 // ─────────────────────────────────────────────────
+//  SPACING UTILITIES
+// ─────────────────────────────────────────────────
+function roundToNearest8(value: number): number {
+  return Math.round(value / 8) * 8;
+}
+
+function isOffGrid(value: number): boolean {
+  return value % 8 !== 0;
+}
+
+function getValidChildren(node: ChildrenMixin): SceneNode[] {
+  return (node.children as SceneNode[]).filter(child => {
+    if (!child.visible) return false;
+    if (!('absoluteBoundingBox' in child)) return false;
+    return (child as SceneNode & { absoluteBoundingBox: Rect | null }).absoluteBoundingBox !== null;
+  });
+}
+
+function scanAutoLayout(node: FrameNode | ComponentNode | InstanceNode): SpacingRecord[] {
+  if (node.layoutMode === 'NONE') return [];
+  const children = getValidChildren(node).filter(child => {
+    return !('layoutPositioning' in child && (child as FrameNode).layoutPositioning === 'ABSOLUTE');
+  });
+  if (children.length < 2) return [];
+  const spacing = node.itemSpacing;
+  const axis: 'horizontal' | 'vertical' =
+    node.layoutMode === 'HORIZONTAL' ? 'horizontal' : 'vertical';
+  return [{
+    parentId:       node.id,
+    parentName:     node.name,
+    axis,
+    fromId:         children[0].id,
+    fromName:       children[0].name,
+    toId:           children[1].id,
+    toName:         children[1].name,
+    spacing,
+    isValid:        !isOffGrid(spacing),
+    suggestedValue: roundToNearest8(spacing),
+    source:         'auto-layout',
+  }];
+}
+
+function scanManualLayout(node: ChildrenMixin & SceneNode): SpacingRecord[] {
+  const records: SpacingRecord[] = [];
+  const children = getValidChildren(node);
+  if (children.length < 2) return [];
+
+  const getBounds = (c: SceneNode): Rect =>
+    (c as SceneNode & { absoluteBoundingBox: Rect }).absoluteBoundingBox;
+
+  const yMin = Math.min(...children.map(c => getBounds(c).y));
+  const yMax = Math.max(...children.map(c => getBounds(c).y + getBounds(c).height));
+  const xMin = Math.min(...children.map(c => getBounds(c).x));
+  const xMax = Math.max(...children.map(c => getBounds(c).x + getBounds(c).width));
+  const isVertical = (yMax - yMin) >= (xMax - xMin);
+  const axis: 'horizontal' | 'vertical' = isVertical ? 'vertical' : 'horizontal';
+
+  const sorted = [...children].sort((a, b) =>
+    isVertical ? getBounds(a).y - getBounds(b).y : getBounds(a).x - getBounds(b).x
+  );
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const curr = sorted[i];
+    const next = sorted[i + 1];
+    const currBox = getBounds(curr);
+    const nextBox = getBounds(next);
+    const rawSpacing = isVertical
+      ? nextBox.y - (currBox.y + currBox.height)
+      : nextBox.x - (currBox.x + currBox.width);
+    if (rawSpacing < 1) continue;
+    const spacing = Math.round(rawSpacing);
+    records.push({
+      parentId: node.id, parentName: node.name, axis,
+      fromId: curr.id, fromName: curr.name,
+      toId: next.id, toName: next.name,
+      spacing, isValid: !isOffGrid(spacing), suggestedValue: roundToNearest8(spacing),
+      source: 'manual',
+    });
+  }
+  return records;
+}
+
+function scanContainer(node: ChildrenMixin & SceneNode): SpacingRecord[] {
+  if ('layoutMode' in node && (node as FrameNode).layoutMode !== 'NONE') {
+    return scanAutoLayout(node as FrameNode);
+  }
+  return scanManualLayout(node);
+}
+
+function scanNode(selected: SceneNode): SpacingRecord[] {
+  if (!('children' in selected)) return [];
+  let records = scanContainer(selected as ChildrenMixin & SceneNode);
+  for (const child of (selected as ChildrenMixin).children) {
+    if (!child.visible) continue;
+    if (!('children' in child)) continue;
+    records = records.concat(scanContainer(child as ChildrenMixin & SceneNode));
+  }
+  return records;
+}
+
+// ─────────────────────────────────────────────────
 //  FONT RESOLUTION
 //  Resolves the actual Figma font style name for a
 //  given CSS numeric weight (400, 500, 600, 700).
-//
-//  Different fonts name their weights differently:
-//    Inter 400  → "Regular"
-//    Poppins 600→ "SemiBold"   or   "Semi Bold"
-//    Some fonts → "Book", "Medium Text", etc.
-//  We query available styles and pick the best match.
 // ─────────────────────────────────────────────────
 
-// Priority candidate lists per CSS weight bucket
 const WEIGHT_CANDIDATES: Record<number, string[]> = {
   300: ['Light', 'Book', 'Regular'],
   400: ['Regular', 'Normal', 'Book', 'Roman', 'Text', 'Light Regular'],
@@ -54,13 +162,11 @@ const WEIGHT_CANDIDATES: Record<number, string[]> = {
   900: ['Black', 'Heavy', 'ExtraBold', 'Extra Bold', 'Bold'],
 };
 
-// Weight-sounding words to exclude when looking for a "Regular" equivalent
 const HEAVY_KEYWORDS = ['thin', 'extralight', 'extra light', 'light', 'medium',
   'semibold', 'semi bold', 'bold', 'extrabold', 'extra bold', 'black', 'heavy',
   'condensed', 'expanded', 'italic', 'oblique'];
 
 async function resolveFontStyle(family: string, weight: number): Promise<string> {
-  // Get all available fonts for this family
   const allFonts = await figma.listAvailableFontsAsync();
   const variants = allFonts
     .filter(f => f.fontName.family.toLowerCase() === family.toLowerCase())
@@ -70,17 +176,12 @@ async function resolveFontStyle(family: string, weight: number): Promise<string>
     throw new Error(`Font family "${family}" tidak tersedia di Figma.`);
   }
 
-  // Try each candidate in priority order
   const candidates = WEIGHT_CANDIDATES[weight] || WEIGHT_CANDIDATES[400];
   for (const candidate of candidates) {
-    const match = variants.find(
-      v => v.toLowerCase() === candidate.toLowerCase()
-    );
+    const match = variants.find(v => v.toLowerCase() === candidate.toLowerCase());
     if (match) return match;
   }
 
-  // Fallback: find ANY non-italic, non-condensed style that has no heavy keyword
-  // (heuristic "regular-ish" fallback)
   const regularFallback = variants.find(v => {
     const lower = v.toLowerCase();
     if (lower.includes('italic') || lower.includes('oblique')) return false;
@@ -89,7 +190,6 @@ async function resolveFontStyle(family: string, weight: number): Promise<string>
   });
   if (regularFallback) return regularFallback;
 
-  // Last resort: just use whatever style is available
   return variants[0];
 }
 
@@ -136,7 +236,6 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
     const styles      = msg.styles as TypoStyle[];
 
     try {
-      // ── 1. Resolve actual font style name per weight ──
       const weightsNeeded = Array.from(new Set(styles.map(s => s.weight)));
       const weightToStyle: Record<number, string> = {};
 
@@ -146,7 +245,6 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
         await figma.loadFontAsync({ family: fontFamily, style: resolved });
       }
 
-      // ── 2. Create / update text styles ──
       const existing = await figma.getLocalTextStylesAsync();
       const prefix   = platform === 'web' ? 'Web' : 'Mobile';
 
@@ -172,4 +270,72 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       figma.ui.postMessage({ type: 'error', message: String(err) });
     }
   }
+
+  // ══════════════════════════════════════════════
+  //  SPACING CHECKER — SCAN
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'scan') {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.ui.postMessage({ type: 'no-selection' });
+      return;
+    }
+    let records: SpacingRecord[] = [];
+    for (const node of selection) {
+      records = records.concat(scanNode(node));
+    }
+    figma.ui.postMessage({ type: 'scan-result', records });
+  }
+
+  // ══════════════════════════════════════════════
+  //  SPACING CHECKER — FOCUS
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'focus') {
+    const { fromId, toId } = msg as unknown as { fromId: string; toId: string };
+    const nodes: SceneNode[] = [];
+    const resolve = (id: string) => {
+      const n = figma.getNodeById(id);
+      if (n && n.type !== 'DOCUMENT' && n.type !== 'PAGE') nodes.push(n as SceneNode);
+    };
+    resolve(fromId);
+    resolve(toId);
+    if (nodes.length > 0) {
+      figma.currentPage.selection = nodes;
+      figma.viewport.scrollAndZoomIntoView(nodes);
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  SPACING CHECKER — FIX
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'fix') {
+    const { parentId, suggestedValue } = msg as unknown as { parentId: string; suggestedValue: number };
+    const node = figma.getNodeById(parentId);
+    if (node && 'itemSpacing' in node) {
+      (node as FrameNode).itemSpacing = suggestedValue;
+      figma.ui.postMessage({ type: 'fix-done', parentId });
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  SPACING CHECKER — CHECK SELECTION
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'check-selection') {
+    const sel = figma.currentPage.selection;
+    figma.ui.postMessage({
+      type: 'selection-status',
+      hasSelection: sel.length > 0,
+      count: sel.length,
+    });
+  }
 };
+
+// ── Live selection update ──
+figma.on('selectionchange', () => {
+  const sel = figma.currentPage.selection;
+  figma.ui.postMessage({
+    type: 'selection-status',
+    hasSelection: sel.length > 0,
+    count: sel.length,
+  });
+});
