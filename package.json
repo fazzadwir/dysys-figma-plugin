@@ -5,6 +5,8 @@
   "main": "code.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build:ui": "/usr/local/bin/node scripts/build-ui.js",
+    "build:all": "npm run build:ui && npm run build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "watch": "npm run build -- --watch"

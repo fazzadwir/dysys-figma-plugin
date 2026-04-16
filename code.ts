@@ -1,7 +1,7 @@
 // DySys — Design System Generator Plugin
 // Main thread: has access to the Figma document via the figma global object.
 
-figma.showUI(__html__, { width: 320, height: 560 });
+figma.showUI(__html__, { width: 440, height: 560 });
 
 // ─────────────────────────────────────────────────
 //  TYPES
@@ -45,10 +45,13 @@ function hexToRgb(hex: string): RGB {
 
 // Priority candidate lists per CSS weight bucket
 const WEIGHT_CANDIDATES: Record<number, string[]> = {
+  300: ['Light', 'Book', 'Regular'],
   400: ['Regular', 'Normal', 'Book', 'Roman', 'Text', 'Light Regular'],
   500: ['Medium', 'Regular', 'Text', 'Normal'],
   600: ['SemiBold', 'Semi Bold', 'Semibold', 'Demi Bold', 'DemiBold', 'Medium'],
   700: ['Bold', 'SemiBold', 'Semi Bold', 'Demi Bold'],
+  800: ['ExtraBold', 'Extra Bold', 'Heavy', 'Bold', 'Black'],
+  900: ['Black', 'Heavy', 'ExtraBold', 'Extra Bold', 'Bold'],
 };
 
 // Weight-sounding words to exclude when looking for a "Regular" equivalent
@@ -159,7 +162,7 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
 
         style.fontName      = { family: fontFamily, style: fontStyle };
         style.fontSize      = typo.size;
-        style.lineHeight    = { value: typo.lh, unit: 'PIXELS' };
+        style.lineHeight    = { value: 160, unit: 'PERCENT' };
         style.letterSpacing = { value: typo.ls, unit: 'PIXELS' };
       }
 

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DySys</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ← injected by build script from src/ui.css → */
+    </style>
+  </head>
+  <body>
+    <div class="plugin-wrapper">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <span class="logo-text">DySys</span>
+          <span class="logo-sub">v1.0 MVP</span>
+        </div>
+        <div class="tabs">
+          <button
+            class="tab-btn active"
+            id="tab-colors"
+            onclick="switchTab('colors')"
+          >
+            <span class="tab-icon"></span> Colors
+          </button>
+          <button
+            class="tab-btn"
+            id="tab-typography"
+            onclick="switchTab('typography')"
+          >
+            <span class="tab-icon"></span> Typography
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- ═══════════════════════════════════════ COLORS TAB ═══ -->
+        <div class="tab-panel active" id="panel-colors">
+          <div class="form-group">
+            <label>Color Name</label>
+            <input
+              type="text"
+              id="color-name"
+              placeholder="e.g. primary, neutral, danger"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Base Hex Color</label>
+            <div class="hex-input-wrap">
+              <input
+                type="text"
+                id="hex-input"
+                placeholder="#7C6AF7"
+                maxlength="7"
+              />
+              <div class="color-swatch" id="swatch" title="Pick color">
+                <input type="color" id="color-picker" value="#7c6af7" />
+              </div>
+            </div>
+            <p class="hint">Shade 500 akan mendekati warna ini.</p>
+          </div>
+
+          <!-- Palette Preview -->
+          <div class="palette-section">
+            <div class="section-label">Preview Palette</div>
+            <div class="palette-grid" id="palette-grid">
+              <!-- Empty chips shown by default -->
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+              <div class="empty-chip"></div>
+            </div>
+            <div class="shade-labels" id="shade-labels">
+              <span class="shade-label">50</span>
+              <span class="shade-label">100</span>
+              <span class="shade-label">200</span>
+              <span class="shade-label">300</span>
+              <span class="shade-label">400</span>
+              <span class="shade-label">500</span>
+              <span class="shade-label">600</span>
+              <span class="shade-label">700</span>
+              <span class="shade-label">800</span>
+              <span class="shade-label">900</span>
+              <span class="shade-label">950</span>
+            </div>
+          </div>
+
+          <button class="btn-generate" id="btn-generate-colors" disabled>
+            ✦ Generate &amp; Save to Styles
+          </button>
+        </div>
+
+        <!-- ═══════════════════════════════════════ TYPOGRAPHY TAB ═══ -->
+        <div class="tab-panel" id="panel-typography">
+          <!-- Platform toggle -->
+          <label>Platform</label>
+          <div class="platform-toggle">
+            <button
+              class="platform-btn active"
+              id="btn-web"
+              onclick="setPlatform('web')"
+            >
+              Web
+            </button>
+            <button
+              class="platform-btn"
+              id="btn-mobile"
+              onclick="setPlatform('mobile')"
+            >
+              Mobile
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Font Family</label>
+            <div class="font-search-wrap" id="font-search-wrap">
+              <div
+                class="font-search-input"
+                id="font-trigger"
+                onclick="toggleFontDropdown()"
+              >
+                <span id="font-display" style="color: var(--text-muted)"
+                  >Pilih font Google Fonts…</span
+                >
+              </div>
+              <span class="font-chevron" id="font-chevron">▾</span>
+
+              <div class="font-dropdown" id="font-dropdown">
+                <div class="font-search-box">
+                  <input
+                    type="text"
+                    id="font-search"
+                    placeholder="Cari font…"
+                    oninput="filterFonts(this.value)"
+                    onclick="event.stopPropagation()"
+                  />
+                </div>
+                <div class="font-list" id="font-list"></div>
+              </div>
+            </div>
+            <p class="hint" style="margin-top: 6px">
+              Font dari Google Fonts — pastikan sudah ter-install di Figma.
+            </p>
+          </div>
+
+          <!-- Typography preview table -->
+          <div class="section-label" style="margin-bottom: 8px">
+            Style Preview
+          </div>
+          <div class="typo-preview" id="typo-preview">
+            <!-- Populated by JS -->
+          </div>
+
+          <button class="btn-generate" id="btn-generate-typo" disabled>
+            ✦ Generate &amp; Save to Styles
+          </button>
+        </div>
+      </div>
+      <!-- /content -->
+    </div>
+    <!-- /plugin-wrapper -->
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      /* ← injected by build script from src/ui.js → */
+    </script>
+  </body>
+</html>
