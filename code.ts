@@ -291,17 +291,30 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
   //  SPACING CHECKER — FOCUS
   // ══════════════════════════════════════════════
   else if (msg.type === 'focus') {
-    const { fromId, toId } = msg as unknown as { fromId: string; toId: string };
+    const fromId = msg.fromId as string;
+    const toId   = msg.toId as string;
     const nodes: SceneNode[] = [];
-    const resolve = (id: string) => {
-      const n = figma.getNodeById(id);
-      if (n && n.type !== 'DOCUMENT' && n.type !== 'PAGE') nodes.push(n as SceneNode);
+
+    const tryResolve = (id: string) => {
+      try {
+        const n = figma.getNodeById(id);
+        if (n && n.type !== 'DOCUMENT' && n.type !== 'PAGE') {
+          nodes.push(n as SceneNode);
+        }
+      } catch (_) {
+        // node not found or inaccessible
+      }
     };
-    resolve(fromId);
-    resolve(toId);
+
+    tryResolve(fromId);
+    tryResolve(toId);
+
     if (nodes.length > 0) {
       figma.currentPage.selection = nodes;
       figma.viewport.scrollAndZoomIntoView(nodes);
+      figma.ui.postMessage({ type: 'focus-done', count: nodes.length });
+    } else {
+      figma.ui.postMessage({ type: 'error', message: 'Could not find the layers. Try re-scanning.' });
     }
   }
 
@@ -309,11 +322,23 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
   //  SPACING CHECKER — FIX
   // ══════════════════════════════════════════════
   else if (msg.type === 'fix') {
-    const { parentId, suggestedValue } = msg as unknown as { parentId: string; suggestedValue: number };
-    const node = figma.getNodeById(parentId);
-    if (node && 'itemSpacing' in node) {
+    const parentId      = msg.parentId as string;
+    const suggestedValue = Number(msg.suggestedValue);
+
+    try {
+      const node = figma.getNodeById(parentId);
+      if (!node) {
+        figma.ui.postMessage({ type: 'error', message: 'Layer not found. Try re-scanning.' });
+        return;
+      }
+      if (!('itemSpacing' in node)) {
+        figma.ui.postMessage({ type: 'error', message: 'Layer is not an auto-layout frame.' });
+        return;
+      }
       (node as FrameNode).itemSpacing = suggestedValue;
       figma.ui.postMessage({ type: 'fix-done', parentId });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'error', message: 'Fix failed: ' + String(err) });
     }
   }
 

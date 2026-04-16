@@ -699,10 +699,7 @@ renderTypoPreview();
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
-    // Pass to existing handler first
-    if (_originalOnMessage) _originalOnMessage.call(window, event);
-
-    // Spacing-specific messages
+    // Spacing messages exclusive; others fall through
     if (msg.type === 'scan-result') {
       btnScan.disabled = !spHasSelection;
       btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
@@ -721,6 +718,11 @@ renderTypoPreview();
         b.disabled = true;
       });
       showToast('✓ Spacing fixed!', 'success');
+    } else if (msg.type === 'focus-done') {
+      // focus confirmed
+    } else {
+      // colors-done, typography-done, error
+      if (_originalOnMessage) _originalOnMessage.call(window, event);
     }
   };
 
