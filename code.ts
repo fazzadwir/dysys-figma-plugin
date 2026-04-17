@@ -295,9 +295,9 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
     const toId   = msg.toId as string;
     const nodes: SceneNode[] = [];
 
-    const tryResolve = (id: string) => {
+    const tryResolve = async (id: string) => {
       try {
-        const n = figma.getNodeById(id);
+        const n = await figma.getNodeByIdAsync(id);
         if (n && n.type !== 'DOCUMENT' && n.type !== 'PAGE') {
           nodes.push(n as SceneNode);
         }
@@ -306,8 +306,8 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       }
     };
 
-    tryResolve(fromId);
-    tryResolve(toId);
+    await tryResolve(fromId);
+    await tryResolve(toId);
 
     if (nodes.length > 0) {
       figma.currentPage.selection = nodes;
@@ -326,7 +326,7 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
     const suggestedValue = Number(msg.suggestedValue);
 
     try {
-      const node = figma.getNodeById(parentId);
+      const node = await figma.getNodeByIdAsync(parentId);
       if (!node) {
         figma.ui.postMessage({ type: 'error', message: 'Layer not found. Try re-scanning.' });
         return;
