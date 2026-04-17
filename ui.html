@@ -19,7 +19,10 @@
 }
 
 :root {
+  /* Dark theme */
   --bg: #0f0f11;
+  --bg-sidebar: #141418;
+  --bg-content: #0f0f11;
   --bg-card: #1a1a1f;
   --bg-input: #111115;
   --border: #2a2a32;
@@ -28,172 +31,226 @@
   --text-secondary: #8a8a9a;
   --text-muted: #55555f;
   --accent: #7c6af7;
+  --accent-light: rgba(124, 106, 247, 0.15);
   --accent-glow: rgba(124, 106, 247, 0.18);
   --accent-hover: #9181f9;
   --success: #4ade80;
   --error: #f87171;
+  --warn: #f59e0b;
+  --warn-bg: rgba(245, 158, 11, 0.08);
+  --warn-border: rgba(245, 158, 11, 0.25);
+  --success-bg: rgba(74, 222, 128, 0.08);
+  --success-border: rgba(74, 222, 128, 0.20);
   --radius: 10px;
   --radius-sm: 6px;
+  --sidebar-w: 58px;
 }
 
-html,
-body {
+html, body {
   width: 100%;
   height: 100%;
   background: var(--bg);
   color: var(--text-primary);
-  font-family:
-    "Inter",
-    -apple-system,
-    sans-serif;
+  font-family: "Inter", -apple-system, sans-serif;
   font-size: 13px;
   line-height: 1.5;
-  overflow-x: hidden;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Layout ── */
+/* ════════════════════════════════
+   MAIN LAYOUT
+════════════════════════════════ */
 .plugin-wrapper {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-  min-height: 480px;
+  min-height: 460px;
 }
 
-/* ── Header ── */
-.header {
-  padding: 14px 16px 0;
+/* ════════════════════════════════
+   SIDEBAR
+════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 12px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.logo-mark {
-  width: 28px;
-  height: 28px;
+.sidebar-logo {
+  width: 34px;
+  height: 34px;
   background: linear-gradient(135deg, #7c6af7 0%, #b06af7 100%);
-  border-radius: 7px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.5px;
-  box-shadow: 0 0 14px rgba(124, 106, 247, 0.45);
+  box-shadow: 0 3px 10px rgba(124, 106, 247, 0.38);
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  user-select: none;
 }
 
-.logo-text {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #c5bcff 0%, #b06af7 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.3px;
-}
-
-.logo-sub {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-left: auto;
-}
-
-/* ── Tabs ── */
-.tabs {
+.sidebar-nav {
   display: flex;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3px;
+  flex-direction: column;
+  align-items: center;
   gap: 2px;
+  width: 100%;
 }
 
-.tab-btn {
-  flex: 1;
-  padding: 7px;
+.nav-item {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
   border: none;
   background: transparent;
-  border-radius: 7px;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
+  transition: background 0.18s, color 0.18s;
+  position: relative;
+  color: var(--text-muted);
 }
 
-.tab-btn:hover {
-  color: var(--text-primary);
+.nav-item:hover {
+  background: rgba(124, 106, 247, 0.07);
+  color: var(--text-secondary);
 }
 
-.tab-btn.active {
+.nav-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* Left indicator bar */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
   background: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(124, 106, 247, 0.35);
+  border-radius: 0 3px 3px 0;
 }
 
-.tab-icon {
+.nav-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.nav-icon-typo {
   font-size: 13px;
+  font-weight: 700;
+  font-family: Georgia, serif;
 }
 
-/* ── Scroll Content ── */
-.content {
+.nav-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* ════════════════════════════════
+   MAIN CONTENT AREA
+════════════════════════════════ */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ═══ PANEL (replaces tab-panel) ═══ */
+.panel {
+  display: none;
+  height: 100%;
+  flex-direction: column;
+}
+
+.panel.active {
+  display: flex;
+  animation: panelFadeIn 0.18s ease;
+}
+
+@keyframes panelFadeIn {
+  from { opacity: 0; transform: translateX(5px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══ PANEL HEADER ═══ */
+.panel-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-content);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.panel-subtitle {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ═══ PANEL BODY (scrollable) ═══ */
+.panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 14px 16px 20px;
+  background: var(--bg-content);
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
 
-.tab-panel {
-  display: none;
-  animation: fadeIn 0.2s ease;
-}
-.tab-panel.active {
-  display: block;
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── Form Elements ── */
+/* ════════════════════════════════
+   FORM ELEMENTS
+════════════════════════════════ */
 .form-group {
   margin-bottom: 14px;
 }
 
-label {
+label,
+.form-label {
   display: block;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
+  letter-spacing: 0.1px;
 }
 
 input[type="text"] {
   width: 100%;
-  padding: 9px 12px;
+  padding: 8px 11px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -201,9 +258,7 @@ input[type="text"] {
   font-family: inherit;
   font-size: 13px;
   outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input[type="text"]::placeholder {
@@ -215,37 +270,48 @@ input[type="text"]:focus {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Hex Input with swatch ── */
-.hex-input-wrap {
+/* ═══ HEX input row ═══ */
+.hex-input-row {
   display: flex;
+  gap: 7px;
   align-items: center;
-  gap: 8px;
 }
 
-.hex-input-wrap input[type="text"] {
+.hex-input-row input[type="text"] {
   flex: 1;
   font-family: "SF Mono", "Fira Code", monospace;
   letter-spacing: 0.5px;
 }
 
-.color-swatch {
-  width: 36px;
-  height: 36px;
+.color-pick-btn {
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   cursor: pointer;
   flex-shrink: 0;
-  background: #7c6af7;
-  transition: transform 0.15s;
   overflow: hidden;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, border-color 0.2s;
+  color: white;
+  background: var(--accent);
 }
 
-.color-swatch:hover {
+.color-pick-btn:hover {
   transform: scale(1.06);
+  border-color: var(--border-focus);
 }
 
-.color-swatch input[type="color"] {
+.color-pick-btn svg {
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+}
+
+.color-pick-btn input[type="color"] {
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -254,56 +320,238 @@ input[type="text"]:focus {
   height: 100%;
 }
 
-/* ── Palette Preview ── */
-.palette-section {
-  margin-bottom: 16px;
+/* ════════════════════════════════
+   COLOR SHADE LIST
+════════════════════════════════ */
+.shade-list {
+  display: flex;
+  flex-direction: column;
 }
 
-.section-label {
-  font-size: 11px;
+.shade-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.shade-item:first-child {
+  padding-top: 0;
+}
+
+.shade-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.shade-preview {
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: #7c6af7;
+}
+
+.shade-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Editable shade name */
+.shade-name-input {
+  display: block;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  margin-bottom: 8px;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  padding: 0 0 2px 0;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.18s;
+  margin-bottom: 5px;
 }
 
-.palette-grid {
-  display: grid;
-  grid-template-columns: repeat(11, 1fr);
-  gap: 3px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+.shade-name-input:hover {
+  border-bottom-color: var(--border);
 }
 
-.shade-chip {
-  aspect-ratio: 1;
-  border-radius: 3px;
-  position: relative;
-  cursor: default;
-  transition: transform 0.15s;
+.shade-name-input:focus {
+  border-bottom-color: var(--accent);
+  box-shadow: none;
 }
 
-.shade-chip:hover {
-  transform: scaleY(1.12);
-  z-index: 1;
+/* HSL params row */
+.shade-params-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
 }
 
-.shade-labels {
-  display: grid;
-  grid-template-columns: repeat(11, 1fr);
-  gap: 3px;
-  margin-top: 4px;
-}
-
-.shade-label {
-  font-size: 8px;
+.shade-param-label {
+  font-weight: 600;
   color: var(--text-muted);
-  text-align: center;
-  font-weight: 500;
+  flex-shrink: 0;
+  font-size: 10.5px;
 }
 
-/* ── Toggle (Web / Mobile) ── */
+.shade-param-input {
+  width: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 4px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  -moz-appearance: textfield;
+}
+
+/* Wider input for HEX format */
+.shade-hex-input {
+  width: 72px !important;
+  text-align: left;
+  font-family: "SF Mono", "Fira Code", monospace;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.shade-param-input::-webkit-outer-spin-button,
+.shade-param-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.shade-param-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.shade-format-select {
+  margin-left: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-family: inherit;
+  padding: 2px 6px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.18s;
+}
+
+.shade-format-select:focus {
+  border-color: var(--accent);
+}
+
+/* Empty state for shade list */
+.shade-empty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 10px 0 4px;
+}
+
+/* ════════════════════════════════
+   BUTTONS
+════════════════════════════════ */
+.btn-generate {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #7c6af7 0%, #9b6af7 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-shadow: 0 4px 16px rgba(124, 106, 247, 0.35);
+  margin-top: 16px;
+  letter-spacing: 0.1px;
+}
+
+.btn-generate:hover {
+  background: linear-gradient(135deg, #8e7ef9 0%, #aa7ef9 100%);
+  box-shadow: 0 6px 18px rgba(124, 106, 247, 0.42);
+  transform: translateY(-1px);
+}
+
+.btn-generate:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(124, 106, 247, 0.22);
+}
+
+.btn-generate:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ═══ Hint ═══ */
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+/* ═══ Toast ═══ */
+.toast {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+  opacity: 0;
+  z-index: 100;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast.success {
+  border-color: rgba(74, 222, 128, 0.35);
+  color: var(--success);
+}
+
+.toast.error {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--error);
+}
+
+/* ════════════════════════════════
+   TYPOGRAPHY
+════════════════════════════════ */
 .platform-toggle {
   display: flex;
   background: var(--bg-card);
@@ -316,35 +564,31 @@ input[type="text"]:focus {
 
 .platform-btn {
   flex: 1;
-  padding: 7px;
+  padding: 6px;
   border: none;
   background: transparent;
-  border-radius: 5px;
+  border-radius: 4px;
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
 }
 
 .platform-btn.active {
   background: var(--bg);
   color: var(--text-primary);
+  font-weight: 600;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
-/* ── Typography Preview Table ── */
 .typo-preview {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .typo-preview-header {
@@ -374,12 +618,8 @@ input[type="text"]:focus {
   transition: background 0.15s;
 }
 
-.typo-row:last-child {
-  border-bottom: none;
-}
-.typo-row:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
+.typo-row:last-child { border-bottom: none; }
+.typo-row:hover { background: rgba(255, 255, 255, 0.02); }
 
 .typo-row .style-name {
   font-size: 11px;
@@ -408,130 +648,20 @@ input[type="text"]:focus {
   font-family: inherit;
   font-size: 10px;
   border-radius: 4px;
-  padding: 2px 0px;
+  padding: 2px 0;
   outline: none;
   cursor: pointer;
   width: 100%;
 }
 
-.typo-weight-select:focus {
-  border-color: var(--border-focus);
-}
+.typo-weight-select:focus { border-color: var(--border-focus); }
 
-/* ── Divider ── */
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 16px 0;
-}
-
-/* ── Button ── */
-.btn-generate {
-  width: 100%;
-  padding: 11px;
-  background: linear-gradient(135deg, #7c6af7 0%, #9b6af7 100%);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  box-shadow: 0 4px 16px rgba(124, 106, 247, 0.35);
-  letter-spacing: 0.1px;
-}
-
-.btn-generate:hover {
-  background: linear-gradient(135deg, #8e7ef9 0%, #aa7ef9 100%);
-  box-shadow: 0 6px 20px rgba(124, 106, 247, 0.5);
-  transform: translateY(-1px);
-}
-
-.btn-generate:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(124, 106, 247, 0.3);
-}
-
-.btn-generate:disabled {
-  background: var(--bg-card);
-  color: var(--text-muted);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ── Toast Notification ── */
-.toast {
-  position: fixed;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%) translateY(60px);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.3s;
-  opacity: 0;
-  z-index: 100;
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-.toast.success {
-  border-color: rgba(74, 222, 128, 0.35);
-  color: var(--success);
-}
-.toast.error {
-  border-color: rgba(248, 113, 113, 0.35);
-  color: var(--error);
-}
-
-/* ── Hint ── */
-.hint {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 5px;
-}
-
-/* ── Empty state ── */
-.empty-palette {
-  display: grid;
-  grid-template-columns: repeat(11, 1fr);
-  gap: 3px;
-}
-
-.empty-chip {
-  aspect-ratio: 1;
-  border-radius: 3px;
-  background: var(--bg-card);
-  border: 1px dashed var(--border);
-}
-
-/* ── Searchable Font Dropdown ── */
-.font-search-wrap {
-  position: relative;
-}
+/* ═══ Font Dropdown ═══ */
+.font-search-wrap { position: relative; }
 
 .font-search-input {
   width: 100%;
-  padding: 9px 36px 9px 12px;
+  padding: 8px 30px 8px 11px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -539,19 +669,8 @@ input[type="text"]:focus {
   font-family: inherit;
   font-size: 13px;
   outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   cursor: pointer;
-}
-
-.font-search-input::placeholder {
-  color: var(--text-muted);
-}
-
-.font-search-input:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .font-chevron {
@@ -565,9 +684,7 @@ input[type="text"]:focus {
   transition: transform 0.2s;
 }
 
-.font-chevron.open {
-  transform: translateY(-50%) rotate(180deg);
-}
+.font-chevron.open { transform: translateY(-50%) rotate(180deg); }
 
 .font-dropdown {
   position: absolute;
@@ -583,50 +700,41 @@ input[type="text"]:focus {
   display: none;
 }
 
-.font-dropdown.open {
-  display: block;
-}
+.font-dropdown.open { display: block; }
 
 .font-search-box {
-  padding: 8px;
+  padding: 7px;
   border-bottom: 1px solid var(--border);
 }
 
 .font-search-box input {
   width: 100%;
-  padding: 7px 10px;
-  background: var(--bg-input);
+  padding: 6px 10px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 4px;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12px;
   outline: none;
 }
 
-.font-search-box input:focus {
-  border-color: var(--border-focus);
-}
+.font-search-box input:focus { border-color: var(--border-focus); }
 
 .font-list {
-  max-height: 180px;
+  max-height: 170px;
   overflow-y: auto;
   padding: 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
 
-.font-list::-webkit-scrollbar {
-  width: 4px;
-}
-.font-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
+.font-list::-webkit-scrollbar { width: 4px; }
+.font-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 .font-item {
-  padding: 7px 10px;
-  border-radius: 5px;
+  padding: 6px 10px;
+  border-radius: 4px;
   font-size: 12px;
   color: var(--text-primary);
   cursor: pointer;
@@ -636,51 +744,64 @@ input[type="text"]:focus {
   justify-content: space-between;
 }
 
-.font-item:hover {
-  background: rgba(124, 106, 247, 0.12);
-}
-.font-item.selected {
-  background: rgba(124, 106, 247, 0.2);
-  color: var(--accent);
-}
-.font-item .font-category {
-  font-size: 10px;
-  color: var(--text-muted);
+.font-item:hover { background: rgba(124, 106, 247, 0.12); }
+.font-item.selected { background: rgba(124, 106, 247, 0.2); color: var(--accent); }
+.font-item .font-category { font-size: 10px; color: var(--text-muted); }
+.font-no-result { padding: 12px; text-align: center; font-size: 12px; color: var(--text-muted); }
+
+/* ════════════════════════════════
+   SPACING CHECKER
+════════════════════════════════ */
+
+/* Grid rule toggle */
+.grid-toggle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-.font-no-result {
-  padding: 12px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-muted);
+.grid-toggle-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.1px;
 }
 
-/* ── Scrollbar ── */
-.content::-webkit-scrollbar {
-  width: 4px;
+.grid-toggle {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
 }
-.content::-webkit-scrollbar-track {
-  background: transparent;
-}
-.content::-webkit-scrollbar-thumb {
-  background: var(--border);
+
+.grid-btn {
+  padding: 3px 10px;
+  border: none;
   border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  letter-spacing: 0.1px;
 }
 
-/* ─────────────────────────────────────────────────
-   SPACING CHECKER TAB
-   ───────────────────────────────────────────────── */
-
-/* CSS vars specific to spacing (extends root palette) */
-:root {
-  --success-bg:      rgba(74, 222, 128, 0.08);
-  --success-border:  rgba(74, 222, 128, 0.2);
-  --warn:            #f59e0b;
-  --warn-bg:         rgba(245, 158, 11, 0.08);
-  --warn-border:     rgba(245, 158, 11, 0.25);
+.grid-btn:hover {
+  color: var(--text-secondary);
 }
 
-/* ── Selection status bar ── */
+.grid-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(124, 106, 247, 0.35);
+}
+
+/* Selection bar */
 .spacing-sel-bar {
   display: flex;
   align-items: center;
@@ -709,36 +830,22 @@ input[type="text"]:focus {
   box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
 }
 
-/* ── Empty state ── */
+/* Empty state */
 .spacing-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 36px 20px;
   text-align: center;
   gap: 10px;
 }
 
-.spacing-empty-icon {
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
+.spacing-empty-icon { color: var(--text-muted); margin-bottom: 4px; }
+.spacing-empty-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.spacing-empty-desc { font-size: 11px; color: var(--text-muted); line-height: 1.6; max-width: 210px; }
 
-.spacing-empty-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.spacing-empty-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  max-width: 220px;
-}
-
-/* ── Summary stats ── */
+/* Summary stats */
 .spacing-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -753,29 +860,13 @@ input[type="text"]:focus {
   padding: 10px 12px;
 }
 
-.sp-stat-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
+.sp-stat-value { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
 .sp-stat-value.warn    { color: var(--warn); }
 .sp-stat-value.success { color: var(--success); }
+.sp-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
-.sp-stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-/* ── Sections ── */
-.spacing-section {
-  margin-bottom: 14px;
-}
+/* Sections */
+.spacing-section { margin-bottom: 14px; }
 
 .spacing-section-header {
   display: flex;
@@ -784,13 +875,7 @@ input[type="text"]:focus {
   margin-bottom: 7px;
 }
 
-.spacing-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
+.spacing-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; }
 
 .spacing-section-badge {
   font-size: 10px;
@@ -802,24 +887,11 @@ input[type="text"]:focus {
   color: var(--text-muted);
 }
 
-.spacing-section-badge.badge-warn {
-  background: var(--warn-bg);
-  border-color: var(--warn-border);
-  color: var(--warn);
-}
+.spacing-section-badge.badge-warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+.spacing-section-badge.badge-ok   { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
 
-.spacing-section-badge.badge-ok {
-  background: var(--success-bg);
-  border-color: var(--success-border);
-  color: var(--success);
-}
-
-/* ── Spacing item cards ── */
-.spacing-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+/* Item list */
+.spacing-list { display: flex; flex-direction: column; gap: 6px; }
 
 .spacing-item {
   background: var(--bg-card);
@@ -830,25 +902,12 @@ input[type="text"]:focus {
   border-left: 3px solid var(--border);
 }
 
-.spacing-item:hover {
-  background: rgba(255,255,255,0.02);
-}
-
+.spacing-item:hover { background: rgba(255, 255, 255, 0.02); }
 .spacing-item.is-issue { border-left-color: var(--warn); }
 .spacing-item.is-valid { border-left-color: var(--success); opacity: 0.75; }
 
-.sp-item-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5px;
-}
-
-.sp-item-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
+.sp-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.sp-item-meta { display: flex; align-items: center; gap: 5px; }
 
 .sp-badge-source {
   font-size: 9px;
@@ -857,28 +916,19 @@ input[type="text"]:focus {
   border-radius: 3px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  background: var(--accent-glow);
+  background: var(--accent-light);
   color: var(--accent);
-  border: 1px solid rgba(124,106,247,0.2);
+  border: 1px solid rgba(124,106,247,0.18);
 }
 
 .sp-badge-source.manual {
-  background: rgba(138,138,154,0.1);
+  background: rgba(107,107,128,0.07);
   color: var(--text-secondary);
   border-color: var(--border);
 }
 
-.sp-badge-axis {
-  font-size: 9px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.sp-item-value {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
+.sp-badge-axis { font-size: 9px; color: var(--text-muted); font-weight: 500; }
+.sp-item-value { display: flex; align-items: center; gap: 5px; }
 
 .sp-value-pill {
   font-size: 11px;
@@ -888,25 +938,10 @@ input[type="text"]:focus {
   font-family: "SF Mono", "Fira Code", monospace;
 }
 
-.sp-value-pill.valid {
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1px solid var(--success-border);
-}
-
-.sp-value-pill.invalid {
-  background: var(--warn-bg);
-  color: var(--warn);
-  border: 1px solid var(--warn-border);
-}
-
-.sp-value-arrow  { font-size: 10px; color: var(--text-muted); }
-.sp-value-suggest {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--success);
-  font-family: "SF Mono", "Fira Code", monospace;
-}
+.sp-value-pill.valid   { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.sp-value-pill.invalid { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-border); }
+.sp-value-arrow   { font-size: 10px; color: var(--text-muted); }
+.sp-value-suggest { font-size: 11px; font-weight: 600; color: var(--success); font-family: "SF Mono", "Fira Code", monospace; }
 
 .sp-item-layers {
   font-size: 11px;
@@ -928,11 +963,7 @@ input[type="text"]:focus {
 }
 
 .sp-layer-sep { color: var(--text-muted); flex-shrink: 0; font-size: 10px; }
-
-.sp-item-actions {
-  display: flex;
-  gap: 6px;
-}
+.sp-item-actions { display: flex; gap: 6px; }
 
 .btn-sp-action {
   flex: 1;
@@ -953,50 +984,18 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-.btn-sp-action:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.12);
-  color: var(--text-primary);
-}
+.btn-sp-action:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); color: var(--text-primary); }
 
-.btn-sp-fix {
-  background: var(--warn-bg);
-  border-color: var(--warn-border);
-  color: var(--warn);
-  font-weight: 600;
-}
+.btn-sp-fix { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); font-weight: 600; }
+.btn-sp-fix:hover { background: rgba(217,119,6,0.12); border-color: var(--warn); color: var(--warn); }
+.btn-sp-fix.fixed { background: var(--success-bg); border-color: var(--success-border); color: var(--success); cursor: default; }
 
-.btn-sp-fix:hover {
-  background: rgba(245,158,11,0.15);
-  border-color: var(--warn);
-  color: var(--warn);
-}
+.btn-sp-suggestion { background: transparent; border-color: var(--border); color: var(--text-muted); cursor: default; font-style: italic; }
+.btn-sp-suggestion:hover { background: transparent; }
 
-.btn-sp-fix.fixed {
-  background: var(--success-bg);
-  border-color: var(--success-border);
-  color: var(--success);
-  cursor: default;
-}
-
-.btn-sp-suggestion {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text-muted);
-  cursor: default;
-  font-style: italic;
-}
-
-.btn-sp-suggestion:hover {
-  background: transparent;
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-/* ── Empty issues section ── */
 .spacing-empty-section {
   text-align: center;
-  padding: 14px;
+  padding: 12px;
   background: var(--success-bg);
   border: 1px solid var(--success-border);
   border-radius: var(--radius-sm);
@@ -1005,7 +1004,7 @@ input[type="text"]:focus {
   font-weight: 500;
 }
 
-/* ── Scan button (inside tab panel) ── */
+/* Scan button */
 .btn-scan {
   width: 100%;
   margin-top: 12px;
@@ -1023,266 +1022,232 @@ input[type="text"]:focus {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  box-shadow: 0 4px 16px rgba(124, 106, 247, 0.3);
+  box-shadow: 0 4px 14px rgba(124, 106, 247, 0.28);
   letter-spacing: 0.1px;
 }
 
 .btn-scan:hover:not(:disabled) {
   background: linear-gradient(135deg, #8e7ef9 0%, #aa7ef9 100%);
-  box-shadow: 0 6px 20px rgba(124, 106, 247, 0.45);
+  box-shadow: 0 6px 18px rgba(124, 106, 247, 0.4);
   transform: translateY(-1px);
 }
 
-.btn-scan:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(124, 106, 247, 0.25);
-}
+.btn-scan:active:not(:disabled) { transform: translateY(0); }
 
 .btn-scan:disabled {
   background: var(--bg-card);
   color: var(--text-muted);
   box-shadow: none;
   cursor: not-allowed;
-  transform: none;
 }
 
     </style>
   </head>
   <body>
     <div class="plugin-wrapper">
-      <!-- Header -->
-      <div class="header">
-        <div class="logo">
-          <span class="logo-text">DySys</span>
-          <span class="logo-sub">v1.0 MVP</span>
-        </div>
-        <div class="tabs">
-          <button
-            class="tab-btn active"
-            id="tab-colors"
-            onclick="switchTab('colors')"
-          >
-            <span class="tab-icon">🎨</span> Colors
-          </button>
-          <button
-            class="tab-btn"
-            id="tab-typography"
-            onclick="switchTab('typography')"
-          >
-            <span class="tab-icon">Tt</span> Typography
-          </button>
-          <button
-            class="tab-btn"
-            id="tab-spacing"
-            onclick="switchTab('spacing')"
-          >
-            <span class="tab-icon">⊞</span> Spacing
-          </button>
-        </div>
-      </div>
 
-      <!-- Content -->
-      <div class="content">
-        <!-- ═══════════════════════════════════════ COLORS TAB ═══ -->
-        <div class="tab-panel active" id="panel-colors">
-          <div class="form-group">
-            <label>Color Name</label>
-            <input
-              type="text"
-              id="color-name"
-              placeholder="e.g. primary, neutral, danger"
-            />
+      <!-- ═══ SIDEBAR ═══ -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">Dy</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" id="nav-colors" onclick="switchPanel('colors')">
+            <span class="nav-icon">🎨</span>
+            <span class="nav-label">Colors</span>
+          </button>
+          <button class="nav-item" id="nav-typography" onclick="switchPanel('typography')">
+            <span class="nav-icon nav-icon-typo">Tt</span>
+            <span class="nav-label">Typo</span>
+          </button>
+          <button class="nav-item" id="nav-spacing" onclick="switchPanel('spacing')">
+            <span class="nav-icon">⊞</span>
+            <span class="nav-label">Space</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- ═══ MAIN CONTENT ═══ -->
+      <div class="main-content">
+
+        <!-- ══════════ COLORS PANEL ══════════ -->
+        <div class="panel active" id="panel-colors">
+          <div class="panel-header">
+            <div class="panel-title">Colors</div>
+            <div class="panel-subtitle">{section ini untuk membuat shade color dari 50 - 950}</div>
           </div>
+          <div class="panel-body">
 
-          <div class="form-group">
-            <label>Base Hex Color</label>
-            <div class="hex-input-wrap">
+            <!-- Style Name -->
+            <div class="form-group">
+              <label class="form-label">Style Name</label>
               <input
                 type="text"
-                id="hex-input"
-                placeholder="#7C6AF7"
-                maxlength="7"
+                id="color-name"
+                placeholder="e.g. Purple"
               />
-              <div class="color-swatch" id="swatch" title="Pick color">
-                <input type="color" id="color-picker" value="#7c6af7" />
-              </div>
             </div>
-            <p class="hint">Shade 500 akan mendekati warna ini.</p>
-          </div>
 
-          <!-- Palette Preview -->
-          <div class="palette-section">
-            <div class="section-label">Preview Palette</div>
-            <div class="palette-grid" id="palette-grid">
-              <!-- Empty chips shown by default -->
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-              <div class="empty-chip"></div>
-            </div>
-            <div class="shade-labels" id="shade-labels">
-              <span class="shade-label">50</span>
-              <span class="shade-label">100</span>
-              <span class="shade-label">200</span>
-              <span class="shade-label">300</span>
-              <span class="shade-label">400</span>
-              <span class="shade-label">500</span>
-              <span class="shade-label">600</span>
-              <span class="shade-label">700</span>
-              <span class="shade-label">800</span>
-              <span class="shade-label">900</span>
-              <span class="shade-label">950</span>
-            </div>
-          </div>
-
-          <button class="btn-generate" id="btn-generate-colors" disabled>
-            ✦ Generate &amp; Save to Styles
-          </button>
-        </div>
-
-        <!-- ═══════════════════════════════════════ TYPOGRAPHY TAB ═══ -->
-        <div class="tab-panel" id="panel-typography">
-          <!-- Platform toggle -->
-          <label>Platform</label>
-          <div class="platform-toggle">
-            <button
-              class="platform-btn active"
-              id="btn-web"
-              onclick="setPlatform('web')"
-            >
-              Web
-            </button>
-            <button
-              class="platform-btn"
-              id="btn-mobile"
-              onclick="setPlatform('mobile')"
-            >
-              Mobile
-            </button>
-          </div>
-
-          <div class="form-group">
-            <label>Font Family</label>
-            <div class="font-search-wrap" id="font-search-wrap">
-              <div
-                class="font-search-input"
-                id="font-trigger"
-                onclick="toggleFontDropdown()"
-              >
-                <span id="font-display" style="color: var(--text-muted)"
-                  >Pilih font Google Fonts…</span
-                >
-              </div>
-              <span class="font-chevron" id="font-chevron">▾</span>
-
-              <div class="font-dropdown" id="font-dropdown">
-                <div class="font-search-box">
-                  <input
-                    type="text"
-                    id="font-search"
-                    placeholder="Cari font…"
-                    oninput="filterFonts(this.value)"
-                    onclick="event.stopPropagation()"
-                  />
+            <!-- HEX Color -->
+            <div class="form-group">
+              <label class="form-label">HEX Color</label>
+              <div class="hex-input-row">
+                <input
+                  type="text"
+                  id="hex-input"
+                  placeholder="#7C6AF7"
+                  maxlength="7"
+                />
+                <div class="color-pick-btn" id="swatch" title="Pick color">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.5 1.5a1.414 1.414 0 0 1 2 2L5 12l-3 1 1-3 8.5-8.5z"
+                      stroke="currentColor" stroke-width="1.4"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input type="color" id="color-picker" value="#7c6af7" />
                 </div>
-                <div class="font-list" id="font-list"></div>
               </div>
             </div>
-            <p class="hint" style="margin-top: 6px">
-              Font dari Google Fonts — pastikan sudah ter-install di Figma.
-            </p>
-          </div>
 
-          <!-- Typography preview table -->
-          <div class="section-label" style="margin-bottom: 8px">
-            Style Preview
-          </div>
-          <div class="typo-preview" id="typo-preview">
-            <!-- Populated by JS -->
-          </div>
+            <!-- Color Shade List -->
+            <div class="form-label" style="margin-bottom:10px">Color Shade</div>
+            <div class="shade-list" id="shade-list">
+              <!-- populated by JS -->
+            </div>
 
-          <button class="btn-generate" id="btn-generate-typo" disabled>
-            ✦ Generate &amp; Save to Styles
-          </button>
+            <button class="btn-generate" id="btn-generate-colors" disabled>
+              ✦ Generate &amp; Save to Styles
+            </button>
+          </div>
         </div>
 
-        <!-- ═══════════════════════════════════════ SPACING TAB ═══ -->
-        <div class="tab-panel" id="panel-spacing">
-
-          <!-- Selection status -->
-          <div class="spacing-sel-bar">
-            <div class="spacing-sel-dot" id="spacing-status-dot"></div>
-            <span id="spacing-status-text">No selection — select a frame first</span>
+        <!-- ══════════ TYPOGRAPHY PANEL ══════════ -->
+        <div class="panel" id="panel-typography">
+          <div class="panel-header">
+            <div class="panel-title">Typography</div>
+            <div class="panel-subtitle">Generate text styles untuk Figma</div>
           </div>
+          <div class="panel-body">
 
-          <!-- Empty State -->
-          <div class="spacing-empty" id="spacing-empty-state">
-            <div class="spacing-empty-icon">
-              <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
-                <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
-                <rect x="28" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
-                <rect x="4" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
-                <rect x="28" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
-                <line x1="20" y1="12" x2="28" y2="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
-                <line x1="20" y1="36" x2="28" y2="36" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
-                <line x1="12" y1="20" x2="12" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
-                <line x1="36" y1="20" x2="36" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+            <label class="form-label">Platform</label>
+            <div class="platform-toggle">
+              <button class="platform-btn active" id="btn-web" onclick="setPlatform('web')">Web</button>
+              <button class="platform-btn" id="btn-mobile" onclick="setPlatform('mobile')">Mobile</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Font Family</label>
+              <div class="font-search-wrap" id="font-search-wrap">
+                <div class="font-search-input" id="font-trigger" onclick="toggleFontDropdown()">
+                  <span id="font-display" style="color: var(--text-muted)">Pilih font Google Fonts…</span>
+                </div>
+                <span class="font-chevron" id="font-chevron">▾</span>
+                <div class="font-dropdown" id="font-dropdown">
+                  <div class="font-search-box">
+                    <input
+                      type="text"
+                      id="font-search"
+                      placeholder="Cari font…"
+                      oninput="filterFonts(this.value)"
+                      onclick="event.stopPropagation()"
+                    />
+                  </div>
+                  <div class="font-list" id="font-list"></div>
+                </div>
+              </div>
+              <p class="hint" style="margin-top:6px">
+                Font dari Google Fonts — pastikan sudah ter-install di Figma.
+              </p>
+            </div>
+
+            <div class="form-label" style="margin-bottom:8px">Style Preview</div>
+            <div class="typo-preview" id="typo-preview"></div>
+
+            <button class="btn-generate" id="btn-generate-typo" disabled>
+              ✦ Generate &amp; Save to Styles
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════════ SPACING PANEL ══════════ -->
+        <div class="panel" id="panel-spacing">
+          <div class="panel-header">
+            <div class="panel-title">Spacing</div>
+            <div class="panel-subtitle">Detect spacing inconsistencies across all layers</div>
+          </div>
+          <div class="panel-body">
+
+            <!-- Grid rule toggle -->
+            <div class="grid-toggle-wrap">
+              <span class="grid-toggle-label">Grid Rule</span>
+              <div class="grid-toggle">
+                <button class="grid-btn" id="grid-btn-4" onclick="setGridRule(4)">4px</button>
+                <button class="grid-btn active" id="grid-btn-8" onclick="setGridRule(8)">8px</button>
+              </div>
+            </div>
+
+            <!-- Selection status -->
+            <div class="spacing-sel-bar">
+              <div class="spacing-sel-dot" id="spacing-status-dot"></div>
+              <span id="spacing-status-text">No selection — select a frame first</span>
+            </div>
+
+            <!-- Empty State -->
+            <div class="spacing-empty" id="spacing-empty-state">
+              <div class="spacing-empty-icon">
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+                  <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                  <rect x="28" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                  <rect x="4" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                  <rect x="28" y="28" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/>
+                  <line x1="20" y1="12" x2="28" y2="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <line x1="20" y1="36" x2="28" y2="36" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <line x1="12" y1="20" x2="12" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <line x1="36" y1="20" x2="36" y2="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+                </svg>
+              </div>
+              <div class="spacing-empty-title">Select a frame to start</div>
+              <div class="spacing-empty-desc">
+                Select any frame or container, then click <strong>Scan Frame</strong> to detect spacing issues.
+              </div>
+            </div>
+
+            <!-- Results -->
+            <div id="spacing-results" style="display:none">
+              <div class="spacing-summary" id="spacing-summary"></div>
+
+              <div class="spacing-section" id="spacing-section-issues">
+                <div class="spacing-section-header">
+                  <span class="spacing-section-title">Off-Grid Issues</span>
+                  <span class="spacing-section-badge badge-warn" id="spacing-badge-issues">0</span>
+                </div>
+                <div class="spacing-empty-section" id="spacing-empty-issues" style="display:none">
+                  ✓ All spacing values are on the 8pt grid
+                </div>
+                <div class="spacing-list" id="spacing-list-issues"></div>
+              </div>
+
+              <div class="spacing-section" id="spacing-section-all">
+                <div class="spacing-section-header">
+                  <span class="spacing-section-title">All Spacing</span>
+                  <span class="spacing-section-badge" id="spacing-badge-all">0</span>
+                </div>
+                <div class="spacing-list" id="spacing-list-all"></div>
+              </div>
+            </div>
+
+            <!-- Scan Button -->
+            <button class="btn-scan" id="btn-scan" disabled>
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/>
               </svg>
-            </div>
-            <div class="spacing-empty-title">Select a frame to start</div>
-            <div class="spacing-empty-desc">
-              Select any frame or container, then click
-              <strong>Scan Frame</strong> to detect spacing issues.
-            </div>
+              Scan Frame
+            </button>
+
           </div>
-
-          <!-- Results -->
-          <div id="spacing-results" style="display:none">
-            <div class="spacing-summary" id="spacing-summary"></div>
-
-            <div class="spacing-section" id="spacing-section-issues">
-              <div class="spacing-section-header">
-                <span class="spacing-section-title">Off-Grid Issues</span>
-                <span class="spacing-section-badge badge-warn" id="spacing-badge-issues">0</span>
-              </div>
-              <div class="spacing-empty-section" id="spacing-empty-issues" style="display:none">
-                ✓ All spacing values are on the 8pt grid
-              </div>
-              <div class="spacing-list" id="spacing-list-issues"></div>
-            </div>
-
-            <div class="spacing-section" id="spacing-section-all">
-              <div class="spacing-section-header">
-                <span class="spacing-section-title">All Spacing</span>
-                <span class="spacing-section-badge" id="spacing-badge-all">0</span>
-              </div>
-              <div class="spacing-list" id="spacing-list-all"></div>
-            </div>
-          </div>
-
-          <!-- Scan Button -->
-          <button class="btn-scan" id="btn-scan" disabled>
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/>
-            </svg>
-            Scan Frame
-          </button>
-
         </div>
-        <!-- /panel-spacing -->
 
-      </div>
-      <!-- /content -->
-    </div>
-    <!-- /plugin-wrapper -->
+      </div><!-- /main-content -->
+    </div><!-- /plugin-wrapper -->
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
@@ -1294,18 +1259,17 @@ input[type="text"]:focus {
 let currentPlatform = "web";
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
+// Per-shade editable state: { h, s, l, format }
+let shadeState = {};
+
 // ─────────────────────────────────────────────────
-//  TAB NAVIGATION
+//  SIDEBAR NAVIGATION (replaces tab switching)
 // ─────────────────────────────────────────────────
-function switchTab(tab) {
-  document
-    .querySelectorAll(".tab-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document
-    .querySelectorAll(".tab-panel")
-    .forEach((p) => p.classList.remove("active"));
-  document.getElementById("tab-" + tab).classList.add("active");
-  document.getElementById("panel-" + tab).classList.add("active");
+function switchPanel(panel) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('nav-' + panel).classList.add('active');
+  document.getElementById('panel-' + panel).classList.add('active');
 }
 
 // ─────────────────────────────────────────────────
@@ -1313,12 +1277,8 @@ function switchTab(tab) {
 // ─────────────────────────────────────────────────
 function setPlatform(p) {
   currentPlatform = p;
-  document
-    .getElementById("btn-web")
-    .classList.toggle("active", p === "web");
-  document
-    .getElementById("btn-mobile")
-    .classList.toggle("active", p === "mobile");
+  document.getElementById('btn-web').classList.toggle('active', p === 'web');
+  document.getElementById('btn-mobile').classList.toggle('active', p === 'mobile');
   renderTypoPreview();
 }
 
@@ -1326,42 +1286,27 @@ function setPlatform(p) {
 //  COLOR UTILITIES
 // ─────────────────────────────────────────────────
 function hexToHsl(hex) {
-  hex = hex.replace("#", "");
-  if (hex.length === 3)
-    hex = hex
-      .split("")
-      .map((c) => c + c)
-      .join("");
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
   const r = parseInt(hex.slice(0, 2), 16) / 255;
   const g = parseInt(hex.slice(2, 4), 16) / 255;
   const b = parseInt(hex.slice(4, 6), 16) / 255;
-  const max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
-  let h = 0,
-    s = 0,
-    l = (max + min) / 2;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
     }
   }
-  return [h * 360, s * 100, l * 100];
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 }
 
 function hslToHex(h, s, l) {
-  h /= 360;
-  s /= 100;
-  l /= 100;
+  h /= 360; s /= 100; l /= 100;
   let r, g, b;
   if (s === 0) {
     r = g = b = l;
@@ -1380,11 +1325,25 @@ function hslToHex(h, s, l) {
     g = hue2rgb(p, q, h);
     b = hue2rgb(p, q, h - 1 / 3);
   }
-  const toHex = (x) =>
-    Math.round(x * 255)
-      .toString(16)
-      .padStart(2, "0");
-  return "#" + toHex(r) + toHex(g) + toHex(b);
+  const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+  return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+function hslToRgb(h, s, l) {
+  const hex = hslToHex(h, s, l);
+  const rv = parseInt(hex.slice(1, 3), 16);
+  const gv = parseInt(hex.slice(3, 5), 16);
+  const bv = parseInt(hex.slice(5, 7), 16);
+  return `rgb(${rv}, ${gv}, ${bv})`;
+}
+
+function hexToRgbArr(hex) {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16),
+  ];
 }
 
 function isValidHex(hex) {
@@ -1394,81 +1353,224 @@ function isValidHex(hex) {
 // Generate shade palette from base hex
 function generatePalette(hex) {
   const [h, s] = hexToHsl(hex);
-  // Lightness map: 50 = very light, 950 = very dark
   const lightnessMap = {
-    50: 95,
-    100: 90,
-    200: 80,
-    300: 68,
-    400: 55,
-    500: 45,
-    600: 36,
-    700: 27,
-    800: 18,
-    900: 11,
-    950: 7,
+    50: 95, 100: 90, 200: 80, 300: 68, 400: 55,
+    500: 45, 600: 36, 700: 27, 800: 18, 900: 11, 950: 7,
   };
   const palette = {};
-  SHADES.forEach((shade) => {
+  SHADES.forEach(shade => {
     const l = lightnessMap[shade];
-    // Slightly reduce saturation for very dark and very light shades
     const sFactor = shade <= 100 ? 0.55 : shade >= 850 ? 0.7 : 1;
-    palette[shade] = hslToHex(h, s * sFactor, l);
+    const sv = Math.round(s * sFactor);
+    palette[shade] = { h, s: sv, l, hex: hslToHex(h, sv, l) };
   });
   return palette;
 }
 
 // ─────────────────────────────────────────────────
-//  COLOR PALETTE UI
+//  SHADE PARAMS HTML BUILDER
 // ─────────────────────────────────────────────────
-function renderPalette(hex) {
-  const grid = document.getElementById("palette-grid");
-  if (!isValidHex(hex)) {
-    grid.innerHTML = SHADES.map(
-      () => '<div class="empty-chip"></div>',
-    ).join("");
+function buildParamsHTML(shade, h, s, l, fmt) {
+  const hex = hslToHex(h, s, l).toUpperCase();
+  const [rv, gv, bv] = hexToRgbArr(hex);
+
+  const formatSelect = `
+    <select class="shade-format-select" id="shade-fmt-${shade}"
+      onchange="onShadeFormatChange(${shade}, this.value)">
+      <option value="HSL" ${fmt === 'HSL' ? 'selected' : ''}>HSL</option>
+      <option value="HEX" ${fmt === 'HEX' ? 'selected' : ''}>HEX</option>
+      <option value="RGB" ${fmt === 'RGB' ? 'selected' : ''}>RGB</option>
+    </select>`;
+
+  if (fmt === 'HEX') {
+    return `
+      <input class="shade-param-input shade-hex-input" type="text"
+        value="${hex}" id="shade-hexval-${shade}" maxlength="7"
+        placeholder="#RRGGBB"
+        oninput="onShadeHexInputChange(${shade}, this.value)"
+      />
+      ${formatSelect}`;
+  }
+
+  if (fmt === 'RGB') {
+    return `
+      <span class="shade-param-label">R:</span>
+      <input class="shade-param-input" type="number" min="0" max="255" value="${rv}"
+        id="shade-r-${shade}" oninput="onShadeRGBChange(${shade})"/>
+      <span class="shade-param-label">G:</span>
+      <input class="shade-param-input" type="number" min="0" max="255" value="${gv}"
+        id="shade-g-${shade}" oninput="onShadeRGBChange(${shade})"/>
+      <span class="shade-param-label">B:</span>
+      <input class="shade-param-input" type="number" min="0" max="255" value="${bv}"
+        id="shade-b-${shade}" oninput="onShadeRGBChange(${shade})"/>
+      ${formatSelect}`;
+  }
+
+  // Default: HSL
+  return `
+    <span class="shade-param-label">H:</span>
+    <input class="shade-param-input" type="number" min="0" max="360" value="${h}"
+      id="shade-h-${shade}" oninput="onShadeHSLChange(${shade})"/>
+    <span class="shade-param-label">S:</span>
+    <input class="shade-param-input" type="number" min="0" max="100" value="${s}"
+      id="shade-s-${shade}" oninput="onShadeHSLChange(${shade})"/>
+    <span class="shade-param-label">L:</span>
+    <input class="shade-param-input" type="number" min="0" max="100" value="${l}"
+      id="shade-l-${shade}" oninput="onShadeHSLChange(${shade})"/>
+    ${formatSelect}`;
+}
+
+// ─────────────────────────────────────────────────
+//  SHADE LIST RENDER
+// ─────────────────────────────────────────────────
+function renderShadeList(baseHex) {
+  const list = document.getElementById('shade-list');
+  const colorName = (colorNameInput.value.trim() || 'Color').replace(/\s+$/, '');
+
+  if (!isValidHex(baseHex)) {
+    list.innerHTML = '<div class="shade-empty-hint">Enter a valid HEX color above to preview shades.</div>';
     return;
   }
-  const palette = generatePalette(hex);
-  grid.innerHTML = SHADES.map((shade) => {
-    const color = palette[shade];
-    return `<div class="shade-chip" style="background:${color}" title="${shade}: ${color}"></div>`;
-  }).join("");
+
+  const palette = generatePalette(baseHex);
+
+  // Init shadeState from palette (only for shades not yet customised)
+  SHADES.forEach(shade => {
+    if (!shadeState[shade]) {
+      const p = palette[shade];
+      shadeState[shade] = { h: p.h, s: p.s, l: p.l, format: 'HSL' };
+    }
+  });
+
+  // Render 950 → 50 (descending, darkest first)
+  const shadeSorted = [...SHADES].sort((a, b) => b - a);
+
+  list.innerHTML = shadeSorted.map(shade => {
+    const st = shadeState[shade];
+    const { h, s, l, format: fmt } = st;
+    const hex = hslToHex(h, s, l);
+    const shadeName = `${colorName}-${shade}`;
+
+    return `
+      <div class="shade-item" data-shade="${shade}">
+        <div class="shade-preview" id="prev-${shade}" style="background:${hex}"></div>
+        <div class="shade-info">
+          <input
+            class="shade-name-input"
+            type="text"
+            value="${shadeName}"
+            id="shade-name-${shade}"
+            onblur="onShadeNameBlur(${shade}, this)"
+          />
+          <div class="shade-params-row" id="shade-params-${shade}">
+            ${buildParamsHTML(shade, h, s, l, fmt)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────
+//  SHADE INPUT HANDLERS
+// ─────────────────────────────────────────────────
+function onShadeHSLChange(shade) {
+  const h = parseInt(document.getElementById('shade-h-' + shade).value) || 0;
+  const s = parseInt(document.getElementById('shade-s-' + shade).value) || 0;
+  const l = parseInt(document.getElementById('shade-l-' + shade).value) || 0;
+  if (!shadeState[shade]) shadeState[shade] = { h, s, l, format: 'HSL' };
+  shadeState[shade].h = Math.max(0, Math.min(360, h));
+  shadeState[shade].s = Math.max(0, Math.min(100, s));
+  shadeState[shade].l = Math.max(0, Math.min(100, l));
+  const hex = hslToHex(shadeState[shade].h, shadeState[shade].s, shadeState[shade].l);
+  document.getElementById('prev-' + shade).style.background = hex;
+}
+
+function onShadeHexInputChange(shade, val) {
+  let v = val.trim();
+  if (v && !v.startsWith('#')) v = '#' + v;
+  if (!isValidHex(v)) return;
+  const [h, s, l] = hexToHsl(v);
+  if (!shadeState[shade]) shadeState[shade] = { h, s, l, format: 'HEX' };
+  shadeState[shade].h = Math.round(h);
+  shadeState[shade].s = Math.round(s);
+  shadeState[shade].l = Math.round(l);
+  document.getElementById('prev-' + shade).style.background = v;
+}
+
+function onShadeRGBChange(shade) {
+  const r = Math.min(255, Math.max(0, parseInt(document.getElementById('shade-r-' + shade).value) || 0));
+  const g = Math.min(255, Math.max(0, parseInt(document.getElementById('shade-g-' + shade).value) || 0));
+  const b = Math.min(255, Math.max(0, parseInt(document.getElementById('shade-b-' + shade).value) || 0));
+  const hexVal = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  const [h, s, l] = hexToHsl(hexVal);
+  if (!shadeState[shade]) shadeState[shade] = { h: Math.round(h), s: Math.round(s), l: Math.round(l), format: 'RGB' };
+  shadeState[shade].h = Math.round(h);
+  shadeState[shade].s = Math.round(s);
+  shadeState[shade].l = Math.round(l);
+  document.getElementById('prev-' + shade).style.background = hexVal;
+}
+
+function onShadeFormatChange(shade, fmt) {
+  if (!shadeState[shade]) return;
+  shadeState[shade].format = fmt;
+  // Re-render only the params row for this shade
+  const paramsRow = document.getElementById('shade-params-' + shade);
+  if (!paramsRow) return;
+  const { h, s, l } = shadeState[shade];
+  paramsRow.innerHTML = buildParamsHTML(shade, h, s, l, fmt);
+}
+
+function onShadeNameBlur(shade, input) {
+  input.value = input.value.replace(/[\s\W]+$/, '').trim();
 }
 
 // ─────────────────────────────────────────────────
 //  COLOR INPUT HANDLERS
 // ─────────────────────────────────────────────────
-const hexInput = document.getElementById("hex-input");
-const colorPicker = document.getElementById("color-picker");
-const swatch = document.getElementById("swatch");
-const colorNameInput = document.getElementById("color-name");
-const btnColors = document.getElementById("btn-generate-colors");
+const hexInput = document.getElementById('hex-input');
+const colorPicker = document.getElementById('color-picker');
+const swatch = document.getElementById('swatch');
+const colorNameInput = document.getElementById('color-name');
+const btnColors = document.getElementById('btn-generate-colors');
 
 function updateColorUI(hex) {
   if (isValidHex(hex)) {
     swatch.style.background = hex;
     colorPicker.value = hex;
-    renderPalette(hex);
+    // Reset shade state so it re-derives from new base color
+    shadeState = {};
+    renderShadeList(hex);
   } else {
-    renderPalette("");
+    renderShadeList('');
   }
   validateColorForm();
 }
 
-hexInput.addEventListener("input", (e) => {
+hexInput.addEventListener('input', e => {
   let val = e.target.value.trim();
-  if (val && !val.startsWith("#")) val = "#" + val;
+  if (val && !val.startsWith('#')) val = '#' + val;
   hexInput.value = val;
   updateColorUI(val);
 });
 
-colorPicker.addEventListener("input", (e) => {
+colorPicker.addEventListener('input', e => {
   hexInput.value = e.target.value.toUpperCase();
   updateColorUI(e.target.value);
 });
 
-colorNameInput.addEventListener("input", validateColorForm);
+colorNameInput.addEventListener('input', () => {
+  // Re-render shade names when color name changes
+  const hex = hexInput.value.trim();
+  if (isValidHex(hex)) renderShadeList(hex);
+  validateColorForm();
+});
+
+colorNameInput.addEventListener('blur', () => {
+  // Strip trailing spaces from the style name
+  colorNameInput.value = colorNameInput.value.replace(/\s+$/, '');
+  validateColorForm();
+});
 
 function validateColorForm() {
   const name = colorNameInput.value.trim();
@@ -1476,145 +1578,113 @@ function validateColorForm() {
   btnColors.disabled = !(name && isValidHex(hex));
 }
 
-// Init preview with default purple color
-updateColorUI("#7C6AF7");
-hexInput.value = "#7C6AF7";
+// Init with default purple
+updateColorUI('#7C6AF7');
+hexInput.value = '#7C6AF7';
 
 // ─────────────────────────────────────────────────
 //  TYPOGRAPHY DATA
 // ─────────────────────────────────────────────────
-// styleName convention:
-//   Heading  → Heading/H1 ...
-//   Display  → Display/Large, Display/Medium
-//   Body     → Body/{size}/{weight}  e.g. Body/16/Regular
-//   Caption  → Caption/{size}/Regular
 const TYPO_WEB = [
-  // Display
-  { styleName: "Display/Large", size: 57, weight: 400, lh: 64, ls: -0.25 },
-  { styleName: "Display/Medium", size: 45, weight: 400, lh: 52, ls: 0 },
-  // Heading
-  { styleName: "Heading/H1", size: 36, weight: 600, lh: 44, ls: 0 },
-  { styleName: "Heading/H2", size: 28, weight: 600, lh: 36, ls: 0 },
-  { styleName: "Heading/H3", size: 24, weight: 600, lh: 32, ls: 0 },
-  { styleName: "Heading/H4", size: 20, weight: 600, lh: 28, ls: 0 },
-  { styleName: "Heading/H5", size: 18, weight: 500, lh: 26, ls: 0 },
-  { styleName: "Heading/H6", size: 16, weight: 500, lh: 24, ls: 0 },
-  // Body — 5 sizes × 3 weights
-  { styleName: "Body/20/Regular", size: 20, weight: 400, lh: 28, ls: 0 },
-  { styleName: "Body/20/Medium", size: 20, weight: 500, lh: 28, ls: 0 },
+  { styleName: "Display/Large",    size: 57, weight: 400, lh: 64, ls: -0.25 },
+  { styleName: "Display/Medium",   size: 45, weight: 400, lh: 52, ls: 0 },
+  { styleName: "Heading/H1",       size: 36, weight: 600, lh: 44, ls: 0 },
+  { styleName: "Heading/H2",       size: 28, weight: 600, lh: 36, ls: 0 },
+  { styleName: "Heading/H3",       size: 24, weight: 600, lh: 32, ls: 0 },
+  { styleName: "Heading/H4",       size: 20, weight: 600, lh: 28, ls: 0 },
+  { styleName: "Heading/H5",       size: 18, weight: 500, lh: 26, ls: 0 },
+  { styleName: "Heading/H6",       size: 16, weight: 500, lh: 24, ls: 0 },
+  { styleName: "Body/20/Regular",  size: 20, weight: 400, lh: 28, ls: 0 },
+  { styleName: "Body/20/Medium",   size: 20, weight: 500, lh: 28, ls: 0 },
   { styleName: "Body/20/SemiBold", size: 20, weight: 600, lh: 28, ls: 0 },
-  { styleName: "Body/18/Regular", size: 18, weight: 400, lh: 26, ls: 0 },
-  { styleName: "Body/18/Medium", size: 18, weight: 500, lh: 26, ls: 0 },
+  { styleName: "Body/18/Regular",  size: 18, weight: 400, lh: 26, ls: 0 },
+  { styleName: "Body/18/Medium",   size: 18, weight: 500, lh: 26, ls: 0 },
   { styleName: "Body/18/SemiBold", size: 18, weight: 600, lh: 26, ls: 0 },
-  { styleName: "Body/16/Regular", size: 16, weight: 400, lh: 24, ls: 0 },
-  { styleName: "Body/16/Medium", size: 16, weight: 500, lh: 24, ls: 0 },
+  { styleName: "Body/16/Regular",  size: 16, weight: 400, lh: 24, ls: 0 },
+  { styleName: "Body/16/Medium",   size: 16, weight: 500, lh: 24, ls: 0 },
   { styleName: "Body/16/SemiBold", size: 16, weight: 600, lh: 24, ls: 0 },
-  { styleName: "Body/14/Regular", size: 14, weight: 400, lh: 20, ls: 0 },
-  { styleName: "Body/14/Medium", size: 14, weight: 500, lh: 20, ls: 0 },
+  { styleName: "Body/14/Regular",  size: 14, weight: 400, lh: 20, ls: 0 },
+  { styleName: "Body/14/Medium",   size: 14, weight: 500, lh: 20, ls: 0 },
   { styleName: "Body/14/SemiBold", size: 14, weight: 600, lh: 20, ls: 0 },
-  { styleName: "Body/12/Regular", size: 12, weight: 400, lh: 16, ls: 0 },
-  { styleName: "Body/12/Medium", size: 12, weight: 500, lh: 16, ls: 0 },
+  { styleName: "Body/12/Regular",  size: 12, weight: 400, lh: 16, ls: 0 },
+  { styleName: "Body/12/Medium",   size: 12, weight: 500, lh: 16, ls: 0 },
   { styleName: "Body/12/SemiBold", size: 12, weight: 600, lh: 16, ls: 0 },
-  // Caption — 2 sizes, Regular only
   { styleName: "Caption/11/Regular", size: 11, weight: 400, lh: 16, ls: 0 },
   { styleName: "Caption/10/Regular", size: 10, weight: 400, lh: 14, ls: 0 },
 ];
 
 const TYPO_MOBILE = [
-  // Display
   { styleName: "Display/34/SemiBold", size: 34, weight: 600, lh: 41, ls: 0 },
-  // Heading
-  { styleName: "Heading/H1", size: 28, weight: 600, lh: 34, ls: 0 },
-  { styleName: "Heading/H2", size: 22, weight: 600, lh: 28, ls: 0 },
-  { styleName: "Heading/H3", size: 20, weight: 600, lh: 25, ls: 0 },
-  // Body — 3 sizes × 3 weights
-  { styleName: "Body/16/Regular", size: 16, weight: 400, lh: 24, ls: 0 },
-  { styleName: "Body/16/Medium", size: 16, weight: 500, lh: 24, ls: 0 },
-  { styleName: "Body/16/SemiBold", size: 16, weight: 600, lh: 24, ls: 0 },
-  { styleName: "Body/14/Regular", size: 14, weight: 400, lh: 20, ls: 0 },
-  { styleName: "Body/14/Medium", size: 14, weight: 500, lh: 20, ls: 0 },
-  { styleName: "Body/14/SemiBold", size: 14, weight: 600, lh: 20, ls: 0 },
-  { styleName: "Body/12/Regular", size: 12, weight: 400, lh: 16, ls: 0 },
-  { styleName: "Body/12/Medium", size: 12, weight: 500, lh: 16, ls: 0 },
-  { styleName: "Body/12/SemiBold", size: 12, weight: 600, lh: 16, ls: 0 },
-  // Caption — 2 sizes, Regular only
-  { styleName: "Caption/11/Regular", size: 11, weight: 400, lh: 16, ls: 0 },
-  { styleName: "Caption/10/Regular", size: 10, weight: 400, lh: 14, ls: 0 },
+  { styleName: "Heading/H1",          size: 28, weight: 600, lh: 34, ls: 0 },
+  { styleName: "Heading/H2",          size: 22, weight: 600, lh: 28, ls: 0 },
+  { styleName: "Heading/H3",          size: 20, weight: 600, lh: 25, ls: 0 },
+  { styleName: "Body/16/Regular",     size: 16, weight: 400, lh: 24, ls: 0 },
+  { styleName: "Body/16/Medium",      size: 16, weight: 500, lh: 24, ls: 0 },
+  { styleName: "Body/16/SemiBold",    size: 16, weight: 600, lh: 24, ls: 0 },
+  { styleName: "Body/14/Regular",     size: 14, weight: 400, lh: 20, ls: 0 },
+  { styleName: "Body/14/Medium",      size: 14, weight: 500, lh: 20, ls: 0 },
+  { styleName: "Body/14/SemiBold",    size: 14, weight: 600, lh: 20, ls: 0 },
+  { styleName: "Body/12/Regular",     size: 12, weight: 400, lh: 16, ls: 0 },
+  { styleName: "Body/12/Medium",      size: 12, weight: 500, lh: 16, ls: 0 },
+  { styleName: "Body/12/SemiBold",    size: 12, weight: 600, lh: 16, ls: 0 },
+  { styleName: "Caption/11/Regular",  size: 11, weight: 400, lh: 16, ls: 0 },
+  { styleName: "Caption/10/Regular",  size: 10, weight: 400, lh: 14, ls: 0 },
 ];
 
 const weightLabel = {
-  300: "Light",
-  400: "Regular",
-  500: "Medium",
-  600: "SemiBold",
-  700: "Bold",
-  800: "ExtraBold",
-  900: "Black",
+  300: 'Light', 400: 'Regular', 500: 'Medium',
+  600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black',
 };
 
 function updateTypoWeight(index, newWeight) {
-  const rows = currentPlatform === "web" ? TYPO_WEB : TYPO_MOBILE;
+  const rows = currentPlatform === 'web' ? TYPO_WEB : TYPO_MOBILE;
   const oldWeight = rows[index].weight;
-
   rows[index].weight = newWeight;
-
   const oldLabel = weightLabel[oldWeight];
   const newLabel = weightLabel[newWeight];
-
   if (oldLabel && newLabel) {
-    const parts = rows[index].styleName.split("/");
+    const parts = rows[index].styleName.split('/');
     const lastPart = parts[parts.length - 1];
-
     if (lastPart === oldLabel) {
       parts[parts.length - 1] = newLabel;
-      rows[index].styleName = parts.join("/");
+      rows[index].styleName = parts.join('/');
     } else if (lastPart.includes(oldLabel)) {
       parts[parts.length - 1] = lastPart.replace(oldLabel, newLabel);
-      rows[index].styleName = parts.join("/");
+      rows[index].styleName = parts.join('/');
     }
   }
-
   renderTypoPreview();
 }
 
 function renderTypoPreview() {
-  const rows = currentPlatform === "web" ? TYPO_WEB : TYPO_MOBILE;
-  const prefix = currentPlatform === "web" ? "Web" : "Mobile";
-  const preview = document.getElementById("typo-preview");
+  const rows = currentPlatform === 'web' ? TYPO_WEB : TYPO_MOBILE;
+  const prefix = currentPlatform === 'web' ? 'Web' : 'Mobile';
+  const preview = document.getElementById('typo-preview');
 
   preview.innerHTML = `
     <div class="typo-preview-header">
-      <span>Style Path</span>
-      <span>Size</span>
-      <span>Weight</span>
-      <span>LH</span>
+      <span>Style Path</span><span>Size</span><span>Weight</span><span>LH</span>
     </div>
-    ${rows
-      .map((r, i) => {
-        // Split styleName into folder path parts for display
-        const parts = r.styleName.split("/");
-        const leaf = parts.pop();
-        const folder = parts.length
-          ? `<span class="style-group">${parts.join("/")} / </span>`
-          : "";
-        return `
+    ${rows.map((r, i) => {
+      const parts = r.styleName.split('/');
+      const leaf = parts.pop();
+      const folder = parts.length
+        ? `<span class="style-group">${parts.join('/')} / </span>`
+        : '';
+      return `
         <div class="typo-row">
           <div class="style-name" title="${prefix}/${r.styleName}">${folder}${leaf}</div>
           <div class="style-val">${r.size}px</div>
           <div class="style-val">
             <select class="typo-weight-select" onchange="updateTypoWeight(${i}, parseInt(this.value))">
               ${[300, 400, 500, 600, 700, 800, 900]
-                .map(
-                  (w) =>
-                    `<option value="${w}" ${r.weight === w ? "selected" : ""}>${w}</option>`,
-                )
-                .join("")}
+                .map(w => `<option value="${w}" ${r.weight === w ? 'selected' : ''}>${w}</option>`)
+                .join('')}
             </select>
           </div>
           <div class="style-val">${r.lh}px</div>
         </div>`;
-      })
-      .join("")}
+    }).join('')}
   `;
 }
 
@@ -1622,119 +1692,79 @@ function renderTypoPreview() {
 //  GOOGLE FONTS LIST
 // ─────────────────────────────────────────────────
 const GOOGLE_FONTS = [
-  { name: "Inter", cat: "Sans Serif" },
-  { name: "Roboto", cat: "Sans Serif" },
-  { name: "Open Sans", cat: "Sans Serif" },
-  { name: "Lato", cat: "Sans Serif" },
-  { name: "Montserrat", cat: "Sans Serif" },
-  { name: "Poppins", cat: "Sans Serif" },
-  { name: "Nunito", cat: "Sans Serif" },
-  { name: "Raleway", cat: "Sans Serif" },
-  { name: "Rubik", cat: "Sans Serif" },
-  { name: "Outfit", cat: "Sans Serif" },
-  { name: "DM Sans", cat: "Sans Serif" },
-  { name: "Plus Jakarta Sans", cat: "Sans Serif" },
-  { name: "Figtree", cat: "Sans Serif" },
-  { name: "Manrope", cat: "Sans Serif" },
-  { name: "Work Sans", cat: "Sans Serif" },
-  { name: "Mulish", cat: "Sans Serif" },
-  { name: "Karla", cat: "Sans Serif" },
-  { name: "Jost", cat: "Sans Serif" },
-  { name: "Lexend", cat: "Sans Serif" },
-  { name: "Geist", cat: "Sans Serif" },
-  { name: "Source Sans 3", cat: "Sans Serif" },
-  { name: "Barlow", cat: "Sans Serif" },
-  { name: "IBM Plex Sans", cat: "Sans Serif" },
-  { name: "Urbanist", cat: "Sans Serif" },
-  { name: "Sora", cat: "Sans Serif" },
-  { name: "Space Grotesk", cat: "Sans Serif" },
-  { name: "Noto Sans", cat: "Sans Serif" },
-  { name: "Quicksand", cat: "Sans Serif" },
-  { name: "Oxanium", cat: "Sans Serif" },
-  { name: "Josefin Sans", cat: "Sans Serif" },
-  { name: "Playfair Display", cat: "Serif" },
-  { name: "Merriweather", cat: "Serif" },
-  { name: "Lora", cat: "Serif" },
-  { name: "EB Garamond", cat: "Serif" },
-  { name: "Cormorant Garamond", cat: "Serif" },
-  { name: "DM Serif Display", cat: "Serif" },
-  { name: "Libre Baskerville", cat: "Serif" },
-  { name: "Source Serif 4", cat: "Serif" },
-  { name: "IBM Plex Serif", cat: "Serif" },
-  { name: "Noto Serif", cat: "Serif" },
-  { name: "Bitter", cat: "Serif" },
-  { name: "Crimson Text", cat: "Serif" },
-  { name: "Fraunces", cat: "Serif" },
-  { name: "Spectral", cat: "Serif" },
-  { name: "Alegreya", cat: "Serif" },
-  { name: "Fira Code", cat: "Monospace" },
-  { name: "Source Code Pro", cat: "Monospace" },
-  { name: "JetBrains Mono", cat: "Monospace" },
-  { name: "IBM Plex Mono", cat: "Monospace" },
-  { name: "Space Mono", cat: "Monospace" },
-  { name: "Roboto Mono", cat: "Monospace" },
-  { name: "Courier Prime", cat: "Monospace" },
+  { name: "Inter", cat: "Sans Serif" }, { name: "Roboto", cat: "Sans Serif" },
+  { name: "Open Sans", cat: "Sans Serif" }, { name: "Lato", cat: "Sans Serif" },
+  { name: "Montserrat", cat: "Sans Serif" }, { name: "Poppins", cat: "Sans Serif" },
+  { name: "Nunito", cat: "Sans Serif" }, { name: "Raleway", cat: "Sans Serif" },
+  { name: "Rubik", cat: "Sans Serif" }, { name: "Outfit", cat: "Sans Serif" },
+  { name: "DM Sans", cat: "Sans Serif" }, { name: "Plus Jakarta Sans", cat: "Sans Serif" },
+  { name: "Figtree", cat: "Sans Serif" }, { name: "Manrope", cat: "Sans Serif" },
+  { name: "Work Sans", cat: "Sans Serif" }, { name: "Mulish", cat: "Sans Serif" },
+  { name: "Karla", cat: "Sans Serif" }, { name: "Jost", cat: "Sans Serif" },
+  { name: "Lexend", cat: "Sans Serif" }, { name: "Geist", cat: "Sans Serif" },
+  { name: "Source Sans 3", cat: "Sans Serif" }, { name: "Barlow", cat: "Sans Serif" },
+  { name: "IBM Plex Sans", cat: "Sans Serif" }, { name: "Urbanist", cat: "Sans Serif" },
+  { name: "Sora", cat: "Sans Serif" }, { name: "Space Grotesk", cat: "Sans Serif" },
+  { name: "Noto Sans", cat: "Sans Serif" }, { name: "Quicksand", cat: "Sans Serif" },
+  { name: "Oxanium", cat: "Sans Serif" }, { name: "Josefin Sans", cat: "Sans Serif" },
+  { name: "Playfair Display", cat: "Serif" }, { name: "Merriweather", cat: "Serif" },
+  { name: "Lora", cat: "Serif" }, { name: "EB Garamond", cat: "Serif" },
+  { name: "Cormorant Garamond", cat: "Serif" }, { name: "DM Serif Display", cat: "Serif" },
+  { name: "Libre Baskerville", cat: "Serif" }, { name: "Source Serif 4", cat: "Serif" },
+  { name: "IBM Plex Serif", cat: "Serif" }, { name: "Noto Serif", cat: "Serif" },
+  { name: "Bitter", cat: "Serif" }, { name: "Crimson Text", cat: "Serif" },
+  { name: "Fraunces", cat: "Serif" }, { name: "Spectral", cat: "Serif" },
+  { name: "Alegreya", cat: "Serif" }, { name: "Fira Code", cat: "Monospace" },
+  { name: "Source Code Pro", cat: "Monospace" }, { name: "JetBrains Mono", cat: "Monospace" },
+  { name: "IBM Plex Mono", cat: "Monospace" }, { name: "Space Mono", cat: "Monospace" },
+  { name: "Roboto Mono", cat: "Monospace" }, { name: "Courier Prime", cat: "Monospace" },
   { name: "Inconsolata", cat: "Monospace" },
 ];
 
 // ─────────────────────────────────────────────────
 //  FONT DROPDOWN LOGIC
 // ─────────────────────────────────────────────────
-let selectedFont = "";
+let selectedFont = '';
 let dropdownOpen = false;
-const btnTypo = document.getElementById("btn-generate-typo");
+const btnTypo = document.getElementById('btn-generate-typo');
 
-function renderFontList(filter = "") {
-  const list = document.getElementById("font-list");
+function renderFontList(filter = '') {
+  const list = document.getElementById('font-list');
   const filtered = filter
-    ? GOOGLE_FONTS.filter((f) =>
-        f.name.toLowerCase().includes(filter.toLowerCase()),
-      )
+    ? GOOGLE_FONTS.filter(f => f.name.toLowerCase().includes(filter.toLowerCase()))
     : GOOGLE_FONTS;
 
   if (filtered.length === 0) {
-    list.innerHTML =
-      '<div class="font-no-result">Font tidak ditemukan</div>';
+    list.innerHTML = '<div class="font-no-result">Font tidak ditemukan</div>';
     return;
   }
 
-  list.innerHTML = filtered
-    .map(
-      (f) => `
-    <div class="font-item ${selectedFont === f.name ? "selected" : ""}"
+  list.innerHTML = filtered.map(f => `
+    <div class="font-item ${selectedFont === f.name ? 'selected' : ''}"
          onclick="selectFont('${f.name}')">
       <span>${f.name}</span>
       <span class="font-category">${f.cat}</span>
     </div>
-  `,
-    )
-    .join("");
+  `).join('');
 }
 
 function toggleFontDropdown() {
   dropdownOpen = !dropdownOpen;
-  document
-    .getElementById("font-dropdown")
-    .classList.toggle("open", dropdownOpen);
-  document
-    .getElementById("font-chevron")
-    .classList.toggle("open", dropdownOpen);
+  document.getElementById('font-dropdown').classList.toggle('open', dropdownOpen);
+  document.getElementById('font-chevron').classList.toggle('open', dropdownOpen);
   if (dropdownOpen) {
-    setTimeout(() => document.getElementById("font-search").focus(), 50);
+    setTimeout(() => document.getElementById('font-search').focus(), 50);
     renderFontList();
   }
 }
 
-function filterFonts(val) {
-  renderFontList(val);
-}
+function filterFonts(val) { renderFontList(val); }
 
 function selectFont(name) {
   selectedFont = name;
-  document.getElementById("font-display").textContent = name;
-  document.getElementById("font-display").style.color =
-    "var(--text-primary)";
-  document.getElementById("font-search").value = "";
+  document.getElementById('font-display').textContent = name;
+  document.getElementById('font-display').style.color = 'var(--text-primary)';
+  document.getElementById('font-search').value = '';
   renderFontList();
   closeFontDropdown();
   btnTypo.disabled = false;
@@ -1742,13 +1772,12 @@ function selectFont(name) {
 
 function closeFontDropdown() {
   dropdownOpen = false;
-  document.getElementById("font-dropdown").classList.remove("open");
-  document.getElementById("font-chevron").classList.remove("open");
+  document.getElementById('font-dropdown').classList.remove('open');
+  document.getElementById('font-chevron').classList.remove('open');
 }
 
-// Close when clicking outside
-document.addEventListener("click", (e) => {
-  if (!document.getElementById("font-search-wrap").contains(e.target)) {
+document.addEventListener('click', e => {
+  if (!document.getElementById('font-search-wrap').contains(e.target)) {
     closeFontDropdown();
   }
 });
@@ -1756,44 +1785,37 @@ document.addEventListener("click", (e) => {
 // ─────────────────────────────────────────────────
 //  GENERATE BUTTONS → postMessage to code.ts
 // ─────────────────────────────────────────────────
-btnColors.addEventListener("click", () => {
-  const name = colorNameInput.value.trim();
+btnColors.addEventListener('click', () => {
+  // Strip trailing whitespace from style name before sending
+  const name = colorNameInput.value.trim().replace(/\s+$/, '');
   const hex = hexInput.value.trim();
-  const shades = generatePalette(hex);
+
+  // Collect per-shade hex from shadeState (user may have edited HSL)
+  const shades = SHADES.map(s => {
+    const st = shadeState[s];
+    return { shade: s, hex: st ? hslToHex(st.h, st.s, st.l) : hex };
+  });
 
   btnColors.disabled = true;
-  btnColors.textContent = "Generating…";
+  btnColors.textContent = 'Generating…';
 
   parent.postMessage(
-    {
-      pluginMessage: {
-        type: "generate-colors",
-        colorName: name,
-        shades: SHADES.map((s) => ({ shade: s, hex: shades[s] })),
-      },
-    },
-    "*",
+    { pluginMessage: { type: 'generate-colors', colorName: name, shades } },
+    '*'
   );
 });
 
-btnTypo.addEventListener("click", () => {
+btnTypo.addEventListener('click', () => {
   const font = selectedFont;
-  const rows = currentPlatform === "web" ? TYPO_WEB : TYPO_MOBILE;
+  const rows = currentPlatform === 'web' ? TYPO_WEB : TYPO_MOBILE;
   const platform = currentPlatform;
 
   btnTypo.disabled = true;
-  btnTypo.textContent = "Generating…";
+  btnTypo.textContent = 'Generating…';
 
   parent.postMessage(
-    {
-      pluginMessage: {
-        type: "generate-typography",
-        fontFamily: font,
-        platform,
-        styles: rows,
-      },
-    },
-    "*",
+    { pluginMessage: { type: 'generate-typography', fontFamily: font, platform, styles: rows } },
+    '*'
   );
 });
 
@@ -1804,21 +1826,21 @@ window.onmessage = (event) => {
   const msg = event.data.pluginMessage;
   if (!msg) return;
 
-  if (msg.type === "colors-done") {
+  if (msg.type === 'colors-done') {
     btnColors.disabled = false;
-    btnColors.innerHTML = "✦ Generate &amp; Save to Styles";
-    showToast("✓ " + msg.count + " color styles saved!", "success");
-  } else if (msg.type === "typography-done") {
+    btnColors.innerHTML = '✦ Generate &amp; Save to Styles';
+    showToast('✓ ' + msg.count + ' color styles saved!', 'success');
+  } else if (msg.type === 'typography-done') {
     btnTypo.disabled = false;
-    btnTypo.innerHTML = "✦ Generate &amp; Save to Styles";
-    showToast("✓ " + msg.count + " text styles saved!", "success");
-  } else if (msg.type === "error") {
+    btnTypo.innerHTML = '✦ Generate &amp; Save to Styles';
+    showToast('✓ ' + msg.count + ' text styles saved!', 'success');
+  } else if (msg.type === 'error') {
     btnColors.disabled = false;
-    btnColors.innerHTML = "✦ Generate &amp; Save to Styles";
+    btnColors.innerHTML = '✦ Generate &amp; Save to Styles';
     btnTypo.disabled = false;
-    btnTypo.innerHTML = "✦ Generate &amp; Save to Styles";
+    btnTypo.innerHTML = '✦ Generate &amp; Save to Styles';
     validateColorForm();
-    showToast("✕ " + msg.message, "error");
+    showToast('✕ ' + msg.message, 'error');
   }
 };
 
@@ -1826,14 +1848,14 @@ window.onmessage = (event) => {
 //  TOAST
 // ─────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg, type = "success") {
-  const toast = document.getElementById("toast");
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
   toast.textContent = msg;
-  toast.className = "toast " + type;
+  toast.className = 'toast ' + type;
   clearTimeout(toastTimer);
   requestAnimationFrame(() => {
-    toast.classList.add("show");
-    toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
   });
 }
 
@@ -1846,35 +1868,44 @@ renderTypoPreview();
 //  SPACING CHECKER
 // ─────────────────────────────────────────────────
 (function () {
-  // ── State ──
   let spHasSelection = false;
   let spResults = [];
+  let gridRule = 8; // default 8px
 
-  // ── DOM refs ──
-  const btnScan        = document.getElementById('btn-scan');
-  const spEmptyState   = document.getElementById('spacing-empty-state');
-  const spResultsEl    = document.getElementById('spacing-results');
-  const spStatusDot    = document.getElementById('spacing-status-dot');
-  const spStatusText   = document.getElementById('spacing-status-text');
-  const spSummaryEl    = document.getElementById('spacing-summary');
-  const spListAll      = document.getElementById('spacing-list-all');
-  const spListIssues   = document.getElementById('spacing-list-issues');
-  const spBadgeAll     = document.getElementById('spacing-badge-all');
-  const spBadgeIssues  = document.getElementById('spacing-badge-issues');
-  const spEmptyIssues  = document.getElementById('spacing-empty-issues');
+  // Grid toggle
+  window.setGridRule = function(px) {
+    gridRule = px;
+    document.getElementById('grid-btn-4').classList.toggle('active', px === 4);
+    document.getElementById('grid-btn-8').classList.toggle('active', px === 8);
+    // Reset results so user re-scans with new rule
+    document.getElementById('spacing-results').style.display = 'none';
+    document.getElementById('spacing-empty-state').style.display = 'flex';
+    document.getElementById('spacing-empty-state').querySelector('.spacing-empty-title').textContent = 'Select a frame to start';
+    document.getElementById('spacing-empty-state').querySelector('.spacing-empty-desc').innerHTML =
+      `Select any frame or container, then click <strong>Scan Frame</strong> to detect spacing issues.`;
+  };
 
-  // ── Utilities ──
+  const btnScan       = document.getElementById('btn-scan');
+  const spEmptyState  = document.getElementById('spacing-empty-state');
+  const spResultsEl   = document.getElementById('spacing-results');
+  const spStatusDot   = document.getElementById('spacing-status-dot');
+  const spStatusText  = document.getElementById('spacing-status-text');
+  const spSummaryEl   = document.getElementById('spacing-summary');
+  const spListAll     = document.getElementById('spacing-list-all');
+  const spListIssues  = document.getElementById('spacing-list-issues');
+  const spBadgeAll    = document.getElementById('spacing-badge-all');
+  const spBadgeIssues = document.getElementById('spacing-badge-issues');
+  const spEmptyIssues = document.getElementById('spacing-empty-issues');
+
   function truncate(str, max = 20) {
     return str.length > max ? str.slice(0, max - 1) + '…' : str;
   }
 
-  // ── Messages → plugin ──
-  function sendScan()             { parent.postMessage({ pluginMessage: { type: 'scan' } }, '*'); }
-  function sendFocus(a, b)        { parent.postMessage({ pluginMessage: { type: 'focus', fromId: a, toId: b } }, '*'); }
-  function sendFix(pId, val)      { parent.postMessage({ pluginMessage: { type: 'fix', parentId: pId, suggestedValue: val } }, '*'); }
-  function sendCheckSelection()   { parent.postMessage({ pluginMessage: { type: 'check-selection' } }, '*'); }
+  function sendScan()           { parent.postMessage({ pluginMessage: { type: 'scan', grid: gridRule } }, '*'); }
+  function sendFocus(a, b)      { parent.postMessage({ pluginMessage: { type: 'focus', fromId: a, toId: b } }, '*'); }
+  function sendFix(pId, val)    { parent.postMessage({ pluginMessage: { type: 'fix', parentId: pId, suggestedValue: val } }, '*'); }
+  function sendCheckSelection() { parent.postMessage({ pluginMessage: { type: 'check-selection' } }, '*'); }
 
-  // ── Selection status ──
   function updateSelectionStatus(active, count) {
     spHasSelection = active;
     btnScan.disabled = !active;
@@ -1887,7 +1918,6 @@ renderTypoPreview();
     }
   }
 
-  // ── Render spacing item card ──
   function renderSpacingItem(record, isIssue) {
     const div = document.createElement('div');
     div.className = `spacing-item ${isIssue ? 'is-issue' : 'is-valid'}`;
@@ -1937,28 +1967,31 @@ renderTypoPreview();
     return div;
   }
 
-  // ── Render full results ──
-  function renderSpacingResults(records) {
+  function renderSpacingResults(records, grid) {
     spResults = records;
     const issues = records.filter(r => !r.isValid);
-    const valid  = records.filter(r => r.isValid);
+    const g = grid || gridRule;
 
     spEmptyState.style.display = 'none';
     spResultsEl.style.display  = 'block';
 
-    // Summary
     spSummaryEl.innerHTML = `
       <div class="sp-stat-card">
         <div class="sp-stat-value">${records.length}</div>
-        <div class="sp-stat-label">Total Spacing</div>
+        <div class="sp-stat-label">Spacing Found</div>
       </div>
       <div class="sp-stat-card">
         <div class="sp-stat-value ${issues.length > 0 ? 'warn' : 'success'}">${issues.length}</div>
         <div class="sp-stat-label">Off-Grid Issues</div>
       </div>
+      <div class="sp-stat-card" style="grid-column: span 2">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="sp-stat-value" style="font-size:14px">${g}px</div>
+          <div class="sp-stat-label" style="text-transform:none;font-size:11px">grid rule — scanned all descendants recursively</div>
+        </div>
+      </div>
     `;
 
-    // Issues section
     spBadgeIssues.textContent = issues.length;
     spBadgeIssues.className   = `spacing-section-badge ${issues.length > 0 ? 'badge-warn' : 'badge-ok'}`;
     spListIssues.innerHTML    = '';
@@ -1969,38 +2002,34 @@ renderTypoPreview();
       issues.forEach(r => spListIssues.appendChild(renderSpacingItem(r, true)));
     }
 
-    // All section
     spBadgeAll.textContent = records.length;
     spListAll.innerHTML    = '';
     records.forEach(r => spListAll.appendChild(renderSpacingItem(r, !r.isValid)));
   }
 
-  // ── Scan button ──
   btnScan.addEventListener('click', () => {
     btnScan.disabled = true;
     btnScan.textContent = 'Scanning…';
     sendScan();
   });
 
-  // ── Receive messages from code.ts ──
   // Piggyback on the existing onmessage handler
   const _originalOnMessage = window.onmessage;
   window.onmessage = (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
-    // Spacing messages exclusive; others fall through
     if (msg.type === 'scan-result') {
       btnScan.disabled = !spHasSelection;
       btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
-      renderSpacingResults(msg.records);
+      const usedGrid = msg.grid || gridRule;
+      renderSpacingResults(msg.records, usedGrid);
     } else if (msg.type === 'no-selection') {
       btnScan.disabled = false;
       btnScan.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 4V2a1 1 0 0 1 1-1h2M9 1h2a1 1 0 0 1 1 1v2M12 9v2a1 1 0 0 1-1 1H9M4 12H2a1 1 0 0 1-1-1V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg> Scan Frame`;
     } else if (msg.type === 'selection-status') {
       updateSelectionStatus(msg.hasSelection, msg.count);
     } else if (msg.type === 'fix-done') {
-      // Mark button as fixed
       const allFixBtns = document.querySelectorAll(`.btn-sp-fix[data-parent-id="${msg.parentId}"]`);
       allFixBtns.forEach(b => {
         b.classList.add('fixed');
@@ -2009,17 +2038,14 @@ renderTypoPreview();
       });
       showToast('✓ Spacing fixed!', 'success');
     } else if (msg.type === 'focus-done') {
-      // focus confirmed
+      // confirmed
     } else {
-      // colors-done, typography-done, error
       if (_originalOnMessage) _originalOnMessage.call(window, event);
     }
   };
 
-  // ── Init: ask plugin for current selection ──
   sendCheckSelection();
 })();
-
 
     </script>
   </body>

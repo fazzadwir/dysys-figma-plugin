@@ -48,12 +48,12 @@ function hexToRgb(hex: string): RGB {
 // ─────────────────────────────────────────────────
 //  SPACING UTILITIES
 // ─────────────────────────────────────────────────
-function roundToNearest8(value: number): number {
-  return Math.round(value / 8) * 8;
+function roundToGrid(value: number, grid: number): number {
+  return Math.round(value / grid) * grid;
 }
 
-function isOffGrid(value: number): boolean {
-  return value % 8 !== 0;
+function isOffGrid(value: number, grid: number): boolean {
+  return value % grid !== 0;
 }
 
 function getValidChildren(node: ChildrenMixin): SceneNode[] {
@@ -64,7 +64,7 @@ function getValidChildren(node: ChildrenMixin): SceneNode[] {
   });
 }
 
-function scanAutoLayout(node: FrameNode | ComponentNode | InstanceNode): SpacingRecord[] {
+function scanAutoLayout(node: FrameNode | ComponentNode | InstanceNode, grid: number): SpacingRecord[] {
   if (node.layoutMode === 'NONE') return [];
   const children = getValidChildren(node).filter(child => {
     return !('layoutPositioning' in child && (child as FrameNode).layoutPositioning === 'ABSOLUTE');
@@ -82,13 +82,13 @@ function scanAutoLayout(node: FrameNode | ComponentNode | InstanceNode): Spacing
     toId:           children[1].id,
     toName:         children[1].name,
     spacing,
-    isValid:        !isOffGrid(spacing),
-    suggestedValue: roundToNearest8(spacing),
+    isValid:        !isOffGrid(spacing, grid),
+    suggestedValue: roundToGrid(spacing, grid),
     source:         'auto-layout',
   }];
 }
 
-function scanManualLayout(node: ChildrenMixin & SceneNode): SpacingRecord[] {
+function scanManualLayout(node: ChildrenMixin & SceneNode, grid: number): SpacingRecord[] {
   const records: SpacingRecord[] = [];
   const children = getValidChildren(node);
   if (children.length < 2) return [];
@@ -121,27 +121,30 @@ function scanManualLayout(node: ChildrenMixin & SceneNode): SpacingRecord[] {
       parentId: node.id, parentName: node.name, axis,
       fromId: curr.id, fromName: curr.name,
       toId: next.id, toName: next.name,
-      spacing, isValid: !isOffGrid(spacing), suggestedValue: roundToNearest8(spacing),
+      spacing,
+      isValid: !isOffGrid(spacing, grid),
+      suggestedValue: roundToGrid(spacing, grid),
       source: 'manual',
     });
   }
   return records;
 }
 
-function scanContainer(node: ChildrenMixin & SceneNode): SpacingRecord[] {
+function scanContainer(node: ChildrenMixin & SceneNode, grid: number): SpacingRecord[] {
   if ('layoutMode' in node && (node as FrameNode).layoutMode !== 'NONE') {
-    return scanAutoLayout(node as FrameNode);
+    return scanAutoLayout(node as FrameNode, grid);
   }
-  return scanManualLayout(node);
+  return scanManualLayout(node, grid);
 }
 
-function scanNode(selected: SceneNode): SpacingRecord[] {
-  if (!('children' in selected)) return [];
-  let records = scanContainer(selected as ChildrenMixin & SceneNode);
-  for (const child of (selected as ChildrenMixin).children) {
+// Deep-recursive: walks ALL descendants, not just direct children
+function scanNodeDeep(node: SceneNode, grid: number): SpacingRecord[] {
+  if (!('children' in node)) return [];
+  const container = node as ChildrenMixin & SceneNode;
+  let records = scanContainer(container, grid);
+  for (const child of container.children) {
     if (!child.visible) continue;
-    if (!('children' in child)) continue;
-    records = records.concat(scanContainer(child as ChildrenMixin & SceneNode));
+    records = records.concat(scanNodeDeep(child, grid));
   }
   return records;
 }
@@ -280,11 +283,13 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       figma.ui.postMessage({ type: 'no-selection' });
       return;
     }
+    // grid: 4 or 8 (default 8) sent from UI toggle
+    const grid = (msg.grid as number) === 4 ? 4 : 8;
     let records: SpacingRecord[] = [];
     for (const node of selection) {
-      records = records.concat(scanNode(node));
+      records = records.concat(scanNodeDeep(node, grid));
     }
-    figma.ui.postMessage({ type: 'scan-result', records });
+    figma.ui.postMessage({ type: 'scan-result', records, grid });
   }
 
   // ══════════════════════════════════════════════
