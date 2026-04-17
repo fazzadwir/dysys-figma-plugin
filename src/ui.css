@@ -1028,3 +1028,79 @@ input[type="text"]:focus {
   box-shadow: none;
   cursor: not-allowed;
 }
+
+/* ════════════════════════════════
+   SPACING ACTION BAR (above list)
+════════════════════════════════ */
+.spacing-action-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* Ghost / secondary style for scan btn when inside action bar */
+.btn-scan.btn-scan-secondary {
+  flex: 0 0 auto;
+  width: auto;
+  margin-top: 0;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.btn-scan.btn-scan-secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.18);
+  color: var(--text-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-scan.btn-scan-secondary:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+/* Primary Fix-All button */
+.btn-fix-all {
+  flex: 1;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #7c6af7 0%, #9b6af7 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(124, 106, 247, 0.3);
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+.btn-fix-all:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8e7ef9 0%, #aa7ef9 100%);
+  box-shadow: 0 5px 16px rgba(124, 106, 247, 0.42);
+  transform: translateY(-1px);
+}
+
+.btn-fix-all:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(124, 106, 247, 0.22);
+}
+
+.btn-fix-all:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
