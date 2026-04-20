@@ -19,6 +19,22 @@ interface TypoStyle {
   styleName: string;
 }
 
+interface TypographyStyleNew {
+  id: string;
+  size: number;
+  lineHeight: number;
+  weight: number;
+  style?: string;
+  letterSpacing: number;
+  customName?: string;
+}
+
+interface TypographyGroup {
+  id: string;
+  name: string;
+  styles: TypographyStyleNew[];
+}
+
 interface SpacingRecord {
   parentId: string;
   parentName: string;
@@ -234,40 +250,80 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
   //  GENERATE TYPOGRAPHY STYLES
   // ══════════════════════════════════════════════
   else if (msg.type === 'generate-typography') {
-    const fontFamily  = msg.fontFamily as string;
-    const platform    = msg.platform as string;
-    const styles      = msg.styles as TypoStyle[];
+    const isCustomFont = msg.isCustomFont as boolean;
+    const fontFamily = msg.fontFamily as string;
+    const platform   = msg.platform as string;
+    const prefix     = platform === 'web' ? 'Web' : 'Mobile';
+
+    type FlatStyle = { name: string; size: number; fontStyle: string; lh: number; ls: number };
+    const stylesFlat: FlatStyle[] = [];
+
+    const groups = msg.groups as TypographyGroup[] | undefined;
+
+    if (groups && groups.length > 0) {
+      for (const group of groups) {
+        if (!group.name.trim() || group.styles.length === 0) continue;
+        for (const s of group.styles) {
+          let outputName: string;
+          // UI must now pass `s.style` replacing weight label logic
+          const styleLabel = s.style || 'Regular'; 
+          if (s.customName && s.customName.trim()) {
+            outputName = `${prefix}/${group.name}/${s.customName.trim()}`;
+          } else {
+            outputName = `${prefix}/${group.name}/${s.size} ${styleLabel}`;
+          }
+          stylesFlat.push({
+            name: outputName,
+            size: s.size,
+            fontStyle: styleLabel,
+            lh: s.lineHeight,
+            ls: s.letterSpacing ?? 0,
+          });
+        }
+      }
+    }
+
+    if (stylesFlat.length === 0) {
+      figma.ui.postMessage({ type: 'error', message: 'No styles to generate. Add at least one group with styles.' });
+      return;
+    }
 
     try {
-      const weightsNeeded = Array.from(new Set(styles.map(s => s.weight)));
-      const weightToStyle: Record<number, string> = {};
-
-      for (const w of weightsNeeded) {
-        const resolved = await resolveFontStyle(fontFamily, w);
-        weightToStyle[w] = resolved;
-        await figma.loadFontAsync({ family: fontFamily, style: resolved });
-      }
-
       const existing = await figma.getLocalTextStylesAsync();
-      const prefix   = platform === 'web' ? 'Web' : 'Mobile';
+      const failedStyles: string[] = [];
+      let successCount = 0;
 
-      for (const typo of styles) {
-        const fontStyle = weightToStyle[typo.weight];
-        const fullName  = `${prefix}/${typo.styleName}`;
-
-        let style = existing.find(s => s.name === fullName);
-        if (!style) {
-          style      = figma.createTextStyle();
-          style.name = fullName;
+      for (const s of stylesFlat) {
+        // Individual font loading logic to allow Option A: skip behavior
+        try {
+          await figma.loadFontAsync({ family: fontFamily, style: s.fontStyle });
+        } catch (err) {
+          failedStyles.push(`"${fontFamily} ${s.fontStyle}"`);
+          continue; // Skip style creation if font fails to load
         }
 
-        style.fontName      = { family: fontFamily, style: fontStyle };
-        style.fontSize      = typo.size;
-        style.lineHeight    = { value: 160, unit: 'PERCENT' };
-        style.letterSpacing = { value: typo.ls, unit: 'PIXELS' };
+        let style = existing.find(e => e.name === s.name);
+        if (!style) {
+          style      = figma.createTextStyle();
+          style.name = s.name;
+        }
+        style.fontName      = { family: fontFamily, style: s.fontStyle };
+        style.fontSize      = s.size;
+        style.lineHeight    = { value: s.lh, unit: 'PIXELS' };
+        style.letterSpacing = { value: s.ls, unit: 'PIXELS' };
+        successCount++;
       }
 
-      figma.ui.postMessage({ type: 'typography-done', count: styles.length });
+      if (failedStyles.length > 0) {
+        // Inform UI about skipped styles via a warning toast
+        figma.ui.postMessage({ 
+          type: 'error', 
+          message: `Generated ${successCount} styles. Skipped missing fonts: ${failedStyles.join(', ')}`,
+          count: successCount
+        });
+      } else {
+        figma.ui.postMessage({ type: 'typography-done', count: successCount });
+      }
 
     } catch (err) {
       figma.ui.postMessage({ type: 'error', message: String(err) });
@@ -344,6 +400,31 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       figma.ui.postMessage({ type: 'fix-done', parentId });
     } catch (err) {
       figma.ui.postMessage({ type: 'error', message: 'Fix failed: ' + String(err) });
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  TYPOGRAPHY — GET ALL AVAILABLE FONTS
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'get-available-fonts') {
+    try {
+      const allFonts = await figma.listAvailableFontsAsync();
+      const grouped: Record<string, string[]> = {};
+      for (const font of allFonts) {
+        if (!grouped[font.fontName.family]) {
+          grouped[font.fontName.family] = [];
+        }
+        grouped[font.fontName.family].push(font.fontName.style);
+      }
+      
+      const families = Object.keys(grouped).map(family => ({
+        name: family,
+        styles: grouped[family]
+      })).sort((a, b) => a.name.localeCompare(b.name));
+      
+      figma.ui.postMessage({ type: 'available-fonts', fonts: families });
+    } catch (_) {
+      figma.ui.postMessage({ type: 'available-fonts', fonts: [] });
     }
   }
 
