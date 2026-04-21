@@ -49,6 +49,22 @@ interface SpacingRecord {
   source: 'auto-layout' | 'manual';
 }
 
+type RadiusIssue = {
+  nodeId: string;
+  nodeName: string;
+  nodeType: string;
+  source: 'single' | 'mixed';
+  rule: number;
+  invalidCorners?: Array<{
+    corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+    value: number;
+    suggestedValue: number;
+  }>;
+  value?: number;
+  suggestedValue?: number;
+};
+
+
 // ─────────────────────────────────────────────────
 //  UTILS — HEX → RGB
 // ─────────────────────────────────────────────────
@@ -163,6 +179,52 @@ function scanNodeDeep(node: SceneNode, grid: number): SpacingRecord[] {
     records = records.concat(scanNodeDeep(child, grid));
   }
   return records;
+}
+
+function scanNodeDeepForRadius(node: SceneNode, grid: number): RadiusIssue[] {
+  let issues: RadiusIssue[] = [];
+  
+  if ('cornerRadius' in node && node.visible) {
+    const cornerNode = node as CornerMixin & SceneNode;
+    if (cornerNode.cornerRadius === figma.mixed) {
+      const invalidCorners: Array<{ corner: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight', value: number, suggestedValue: number }> = [];
+      const checkAndPush = (prop: 'topLeftRadius' | 'topRightRadius' | 'bottomLeftRadius' | 'bottomRightRadius') => {
+        if (prop in cornerNode) {
+          const val = Number((cornerNode as any)[prop]);
+          if (!isNaN(val) && val !== 0 && isOffGrid(val, grid)) {
+            const mappedCorner = prop.replace('Radius', '') as 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+            invalidCorners.push({ corner: mappedCorner, value: val, suggestedValue: roundToGrid(val, grid) });
+          }
+        }
+      };
+      checkAndPush('topLeftRadius');
+      checkAndPush('topRightRadius');
+      checkAndPush('bottomLeftRadius');
+      checkAndPush('bottomRightRadius');
+      if (invalidCorners.length > 0) {
+        issues.push({
+          nodeId: cornerNode.id, nodeName: cornerNode.name, nodeType: cornerNode.type,
+          source: 'mixed', rule: grid, invalidCorners
+        });
+      }
+    } else {
+      const val = Number(cornerNode.cornerRadius);
+      if (!isNaN(val) && val !== 0 && isOffGrid(val, grid)) {
+        issues.push({
+          nodeId: cornerNode.id, nodeName: cornerNode.name, nodeType: cornerNode.type,
+          source: 'single', rule: grid, value: val, suggestedValue: roundToGrid(val, grid)
+        });
+      }
+    }
+  }
+
+  if ('children' in node && node.visible) {
+    const container = node as ChildrenMixin & SceneNode;
+    for (const child of container.children) {
+      issues = issues.concat(scanNodeDeepForRadius(child, grid));
+    }
+  }
+  return issues;
 }
 
 // ─────────────────────────────────────────────────
@@ -341,11 +403,14 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
     }
     // grid: 4 or 8 (default 8) sent from UI toggle
     const grid = (msg.grid as number) === 4 ? 4 : 8;
+    const config = (msg.config as { margin: boolean, radius: boolean }) || { margin: true, radius: true };
     let records: SpacingRecord[] = [];
+    let radiusIssues: RadiusIssue[] = [];
     for (const node of selection) {
-      records = records.concat(scanNodeDeep(node, grid));
+      if (config.margin) records = records.concat(scanNodeDeep(node, grid));
+      if (config.radius) radiusIssues = radiusIssues.concat(scanNodeDeepForRadius(node, grid));
     }
-    figma.ui.postMessage({ type: 'scan-result', records, grid });
+    figma.ui.postMessage({ type: 'scan-result', records, radiusIssues, grid });
   }
 
   // ══════════════════════════════════════════════
@@ -400,6 +465,50 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       figma.ui.postMessage({ type: 'fix-done', parentId });
     } catch (err) {
       figma.ui.postMessage({ type: 'error', message: 'Fix failed: ' + String(err) });
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  SPACING CHECKER — FIX RADIUS
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'fix-radius') {
+    const nodeId = msg.nodeId as string;
+    const rule = msg.rule as number;
+
+    try {
+      const node = await figma.getNodeByIdAsync(nodeId);
+      if (!node) {
+        figma.ui.postMessage({ type: 'error', message: 'Layer not found.'});
+        return;
+      }
+      
+      if (!('cornerRadius' in node)) {
+        figma.ui.postMessage({ type: 'error', message: 'Layer does not support corner radius.'});
+        return;
+      }
+      
+      const cornerNode = node as CornerMixin;
+      if (cornerNode.cornerRadius === figma.mixed) {
+        const fix = (prop: 'topLeftRadius' | 'topRightRadius' | 'bottomLeftRadius' | 'bottomRightRadius') => {
+          if (prop in cornerNode) {
+            const val = Number((cornerNode as any)[prop]);
+            if (!isNaN(val) && isOffGrid(val, rule)) {
+              (cornerNode as any)[prop] = roundToGrid(val, rule);
+            }
+          }
+        };
+        fix('topLeftRadius');
+        fix('topRightRadius');
+        fix('bottomLeftRadius');
+        fix('bottomRightRadius');
+      } else {
+        const val = Number(cornerNode.cornerRadius) || 0;
+        cornerNode.cornerRadius = roundToGrid(val, rule);
+      }
+      
+      figma.ui.postMessage({ type: 'fix-radius-done', nodeId });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'error', message: 'Fix radius failed: ' + String(err)});
     }
   }
 

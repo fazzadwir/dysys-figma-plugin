@@ -4,12 +4,14 @@
   "description": "Your Figma Plugin",
   "main": "code.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:ui": "/usr/local/bin/node scripts/build-ui.js",
-    "build:all": "npm run build:ui && npm run build",
+    "build:code": "esbuild code.ts --bundle --outfile=code.js --target=es6",
+    "build:ui": "node scripts/build-ui.js",
+    "build:all": "npm run build:ui && npm run build:code",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "watch": "npm run build -- --watch"
+    "watch:code": "esbuild code.ts --bundle --outfile=code.js --target=es6 --watch=forever",
+    "watch:ui": "node scripts/build-ui.js --watch",
+    "watch": "concurrently \"npm:watch:code\" \"npm:watch:ui\""
   },
   "author": "",
   "license": "",
@@ -17,6 +19,9 @@
     "@eslint/js": "^9.39.4",
     "@figma/eslint-plugin-figma-plugins": "*",
     "@figma/plugin-typings": "*",
+    "concurrently": "^9.2.1",
+    "cpx": "^1.5.0",
+    "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.1"

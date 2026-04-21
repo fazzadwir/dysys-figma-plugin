@@ -959,7 +959,47 @@ renderPreview();
 (function () {
   let spHasSelection = false;
   let spResults = [];
+  let radiusResults = [];
+  let currentFilter = 'margin';
   let gridRule = 8;
+  
+  let checkState = { margin: true, radius: false };
+  
+  window.setCheckerType = function (type) {
+    const isNowActive = !checkState[type];
+    
+    // Prevent unchecking the last active checker
+    if (!isNowActive && !checkState[type === 'margin' ? 'radius' : 'margin']) {
+      return;
+    }
+    
+    checkState[type] = isNowActive;
+    document.getElementById("checker-btn-" + type).classList.toggle("active", isNowActive);
+    
+    updateEmptyStateIcon();
+  };
+  
+  function updateEmptyStateIcon() {
+    const iconContainer = document.getElementById("spacing-empty-icon");
+    if (!iconContainer) return;
+
+    if (checkState.margin && checkState.radius) {
+      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/></svg>';
+    } else if (checkState.margin) {
+      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/><line x1="4" y1="24" x2="44" y2="24" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/><line x1="24" y1="4" x2="24" y2="44" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/></svg>';
+    } else if (checkState.radius) {
+      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="12" stroke="currentColor" stroke-width="2"/></svg>';
+    }
+  }
+  
+  window.setIssueFilter = function (type) {
+    currentFilter = type;
+    document.getElementById("filter-margin").classList.toggle("active", type === 'margin');
+    document.getElementById("filter-radius").classList.toggle("active", type === 'radius');
+    if (spResultsEl.style.display === "block") {
+      renderCurrentIssues();
+    }
+  };
 
   window.setGridRule = function (px) {
     gridRule = px;
@@ -997,7 +1037,7 @@ renderPreview();
 
   function sendScan() {
     parent.postMessage(
-      { pluginMessage: { type: "scan", grid: gridRule } },
+      { pluginMessage: { type: "scan", grid: gridRule, config: checkState } },
       "*",
     );
   }
@@ -1013,20 +1053,37 @@ renderPreview();
       "*",
     );
   }
+  function sendFixRadius(nodeId) {
+    parent.postMessage(
+      { pluginMessage: { type: "fix-radius", nodeId: nodeId, rule: gridRule } },
+      "*"
+    );
+  }
+  
   function sendCheckSelection() {
     parent.postMessage({ pluginMessage: { type: "check-selection" } }, "*");
   }
 
   function sendFixAll() {
-    const issues = spResults.filter(function (r) {
-      return !r.isValid && r.source === "auto-layout";
-    });
-    if (issues.length === 0) return;
-    btnFixAll.disabled = true;
-    btnFixAll.textContent = "Fixing...";
-    issues.forEach(function (r) {
-      sendFix(r.parentId, r.suggestedValue);
-    });
+    if (currentFilter === 'radius') {
+      const issues = radiusResults;
+      if (issues.length === 0) return;
+      btnFixAll.disabled = true;
+      btnFixAll.textContent = "Fixing...";
+      issues.forEach(function (r) {
+        sendFixRadius(r.nodeId);
+      });
+    } else {
+      const issues = spResults.filter(function (r) {
+        return !r.isValid && r.source === "auto-layout";
+      });
+      if (issues.length === 0) return;
+      btnFixAll.disabled = true;
+      btnFixAll.textContent = "Fixing...";
+      issues.forEach(function (r) {
+        sendFix(r.parentId, r.suggestedValue);
+      });
+    }
   }
 
   function setScanButtonsDisabled(disabled) {
@@ -1125,47 +1182,121 @@ renderPreview();
     return div;
   }
 
-  function renderSpacingResults(records, grid) {
-    spResults = records;
-    const issues = records.filter(function (r) {
-      return !r.isValid;
-    });
-    const fixableIssues = issues.filter(function (r) {
-      return r.source === "auto-layout";
-    });
-    const g = grid || gridRule;
+  function renderRadiusItem(record) {
+    const div = document.createElement("div");
+    div.className = "spacing-item is-issue";
+    
+    let valueHTML = "";
+    if (record.source === "single") {
+       valueHTML += '<span class="sp-value-pill invalid">' + record.value + 'px</span><span class="sp-value-arrow">&#8594;</span><span class="sp-value-suggest">' + record.suggestedValue + 'px</span>';
+    } else {
+       const corners = record.invalidCorners.map(function(c) {
+         const crn = c.corner.replace('Radius','');
+         return crn + " " + c.value + "px \u2192 " + c.suggestedValue + "px";
+       }).join(', ');
+       valueHTML += '<div class="sp-value-pill invalid" style="font-size:9px;white-space:normal;line-height:1.4">' + corners + '</div>';
+    }
 
-    spEmptyState.style.display = "none";
-    btnScanEmpty.style.display = "none";
-    spResultsEl.style.display = "block";
+    const actionBtn = '<button class="btn-sp-action btn-sp-fix-radius" data-node-id="' + record.nodeId + '">Fix to ' + record.rule + 'px Rule</button>';
 
-    btnFixAll.disabled = fixableIssues.length === 0;
-    btnFixAll.innerHTML =
-      fixableIssues.length > 0 ? "Apply Fix to All" : "No Issues";
+    div.innerHTML =
+      '<div class="sp-item-top">' +
+      '<div class="sp-item-meta"><span class="sp-badge-source">RADIUS</span><span class="sp-badge-axis">' + record.source + '</span></div>' +
+      '<div class="sp-item-value">' + valueHTML + '</div></div>' +
+      '<div class="sp-item-layers">' +
+      '<span class="sp-layer-name" title="' + record.nodeName + '">' + truncate(record.nodeName) + '</span>' +
+      '<span class="sp-layer-sep">-</span>' +
+      '<span class="sp-layer-name" style="color:var(--text-muted)">' + record.nodeType + '</span>' +
+      "</div>" +
+      '<div class="sp-item-actions">' + actionBtn + "</div>";
 
+    const fixBtn = div.querySelector(".btn-sp-fix-radius");
+    if (fixBtn) {
+      fixBtn.addEventListener("click", function () {
+        sendFixRadius(record.nodeId);
+      });
+    }
+
+    return div;
+  }
+
+  function renderCurrentIssues() {
+    const isRadius = currentFilter === 'radius';
+    document.getElementById("spacing-section-title").textContent = isRadius ? "Radius Issues" : "Margin Issues";
+    
+    let issues = [];
+    if (isRadius) {
+      issues = radiusResults;
+      btnFixAll.innerHTML = "✦ Fix Radius Issues";
+      btnFixAll.disabled = issues.length === 0;
+    } else {
+      issues = spResults.filter(function (r) { return !r.isValid; });
+      const fixable = issues.filter(function (r) { return r.source === "auto-layout"; });
+      btnFixAll.innerHTML = "✦ Fix Margin Issues";
+      btnFixAll.disabled = fixable.length === 0;
+    }
+
+    if (issues.length === 0) {
+      btnFixAll.innerHTML = "No Issues";
+      btnFixAll.disabled = true;
+    }
+    
+    spBadgeIssues.textContent = issues.length;
+    spBadgeIssues.className = "spacing-section-badge " + (issues.length > 0 ? "badge-warn" : "badge-ok");
     spSummaryEl.innerHTML =
       '<div class="sp-stat-card"><div class="sp-stat-value ' +
       (issues.length > 0 ? "warn" : "success") +
       '">' +
       issues.length +
-      '</div><div class="sp-stat-label">Off-Grid Issues</div></div>' +
+      '</div><div class="sp-stat-label">Total Issues</div></div>' +
       '<div class="sp-stat-card"><div style="display:flex;align-items:center;gap:6px"><div class="sp-stat-value" style="font-size:14px">' +
-      g +
+      gridRule +
       'px</div><div class="sp-stat-label" style="text-transform:none;font-size:11px">grid rule</div></div></div>';
 
-    spBadgeIssues.textContent = issues.length;
-    spBadgeIssues.className =
-      "spacing-section-badge " +
-      (issues.length > 0 ? "badge-warn" : "badge-ok");
     spListIssues.innerHTML = "";
     if (issues.length === 0) {
       spEmptyIssues.style.display = "block";
+      spEmptyIssues.textContent = isRadius ? "✓ All radius values are valid" : "✓ All margin values are on the grid";
     } else {
       spEmptyIssues.style.display = "none";
       issues.forEach(function (r) {
-        spListIssues.appendChild(renderSpacingItem(r, true));
+        if (isRadius) spListIssues.appendChild(renderRadiusItem(r));
+        else spListIssues.appendChild(renderSpacingItem(r, true));
       });
     }
+  }
+
+  function renderAllIssues(records, rRecords, grid) {
+    spResults = records;
+    radiusResults = rRecords;
+    
+    // Choose which filter is active based on config and issues found
+    if (checkState.margin && !checkState.radius) {
+      currentFilter = 'margin';
+    } else if (!checkState.margin && checkState.radius) {
+      currentFilter = 'radius';
+    } else if (checkState.margin && checkState.radius) {
+      const hasMarginIssues = spResults.some(function(r) { return !r.isValid; });
+      if (hasMarginIssues && radiusResults.length === 0) {
+        currentFilter = 'margin';
+      } else if (!hasMarginIssues && radiusResults.length > 0) {
+        currentFilter = 'radius';
+      } else {
+        currentFilter = 'margin'; // Default
+      }
+    }
+
+    document.getElementById("filter-margin").style.display = checkState.margin ? "" : "none";
+    document.getElementById("filter-radius").style.display = checkState.radius ? "" : "none";
+
+    document.getElementById("filter-margin").classList.toggle("active", currentFilter === 'margin');
+    document.getElementById("filter-radius").classList.toggle("active", currentFilter === 'radius');
+    
+    spEmptyState.style.display = "none";
+    btnScanEmpty.style.display = "none";
+    spResultsEl.style.display = "block";
+
+    renderCurrentIssues();
   }
 
   const SCAN_ICON =
@@ -1191,7 +1322,7 @@ renderPreview();
       setScanButtonsDisabled(!spHasSelection);
       btnScanEmpty.innerHTML = SCAN_ICON + " Scan Frame";
       btnScan.innerHTML = SCAN_ICON + " Select Frame";
-      renderSpacingResults(msg.records, msg.grid || gridRule);
+      renderAllIssues(msg.records, msg.radiusIssues, msg.grid || gridRule);
     } else if (msg.type === "no-selection") {
       setScanButtonsDisabled(false);
       btnScanEmpty.innerHTML = SCAN_ICON + " Scan Frame";
@@ -1213,6 +1344,21 @@ renderPreview();
         btnFixAll.innerHTML = "All Fixed";
       }
       showToast("Spacing fixed!", "success");
+    } else if (msg.type === "fix-radius-done") {
+      const allFixBtns = document.querySelectorAll(
+        '.btn-sp-fix-radius[data-node-id="' + msg.nodeId + '"]',
+      );
+      allFixBtns.forEach(function (b) {
+        b.classList.add("fixed");
+        b.textContent = "Fixed";
+        b.disabled = true;
+      });
+      const remaining = document.querySelectorAll(".btn-sp-fix-radius:not(.fixed)");
+      if (remaining.length === 0) {
+        btnFixAll.disabled = true;
+        btnFixAll.innerHTML = "All Fixed";
+      }
+      showToast("Radius fixed!", "success");
     } else if (msg.type === "focus-done") {
       // confirmed
     } else {

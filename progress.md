@@ -10,7 +10,7 @@
 
 1. **Colors** — Generator palet warna dengan kontrol per-shade (HSL/HEX/RGB)
 2. **Typography** — Builder untuk text styles berbasis group, dengan dukungan font dari Figma
-3. **Spacing** — Detektor pelanggaran 8pt grid pada spacing layout
+3. **Consistency Checker** — Detektor pelanggaran grid untuk Margin spacing dan Rounded Corner radius
 
 **Repository:** `https://github.com/fazzadwir/dysys-figma-plugin`
 **Branch aktif:** `main`
@@ -59,6 +59,7 @@ npm run build:all
 ## ✅ Fitur yang Sudah Selesai
 
 ### 1. Colors Panel
+
 - [x] Input nama warna (style name)
 - [x] Input HEX + color picker visual
 - [x] Generate otomatis palet 11 shade (50–950) menggunakan algoritma HSL
@@ -69,6 +70,7 @@ npm run build:all
 - [x] Validasi form (tombol disabled jika belum valid)
 
 ### 2. Typography Panel (Typography Style Builder)
+
 - [x] Platform toggle (Web / Mobile) — prefix nama style Web/Mobile
 - [x] Font picker dengan **dropdown searchable** yang menampilkan font-font yang tersedia di Figma environment
 - [x] Mode "Use Custom Font" (checkbox toggle) untuk input font custom sebagai alternatif
@@ -84,21 +86,24 @@ npm run build:all
 - [x] Line height dikirim ke Figma dalam unit PIXELS
 - [x] Letter spacing dikirim dalam unit PIXELS
 
-### 3. Spacing Panel (8pt Grid Checker)
-- [x] Toggle grid rule (4px atau 8px)
+### 3. Consistency Checker (sebelumnya Spacing Panel)
+
+- [x] Toggle rule config (4px atau 8px)
+- [x] Checker dapat diatur untuk memindai Margin, Radius, atau sekaligus keduanya (multiselect)
+- [x] Update empty state icon secara dinamis berdasarkan konfigurasi checker aktif
 - [x] Status indicator (frame terpilih atau tidak)
-- [x] Scan Frame: deep-recursive scan seluruh descendants
-- [x] Deteksi auto-layout spacing (`itemSpacing`)
-- [x] Deteksi manual layout spacing (hitung gap antar bounding box)
-- [x] Menampilkan hanya **Off-Grid Issues** (valid issues disembunyikan)
-- [x] Per-issue: badge source (AUTO / MANUAL), axis, nama layer, nilai saat ini vs. suggested
-- [x] Tombol **Focus** per item → select & zoom to layers di Figma
-- [x] Tombol **Fix** per auto-layout item → apply suggested value
-- [x] Tombol **Apply Fix to All** → fix semua auto-layout issues sekaligus
-- [x] Bug fix: menggunakan `getNodeByIdAsync` (async API Figma)
+- [x] Scan Frame: deep-recursive scan seluruh descendants untuk issue Margin dan Radius
+- [x] Margin: Deteksi auto-layout spacing dan manual layout
+- [x] Radius: Deteksi corner radius, mendukung single radius dan mixed radius per-corner
+- [x] Menampilkan hanya issues berdasarkan filter aktif (Margin/Radius)
+- [x] Per-issue: badge source, layer name, nilai saat ini vs. suggested
+- [x] Tombol **Focus** per item margin → select & zoom to layers di Figma
+- [x] Tombol **Fix** per auto-layout item / radius item → apply suggested value / rule
+- [x] Tombol **Apply Fix to All** / Fix Margin/Radius Issues → fix semua sesuai filter aktif
 - [x] Live update status selection (selectionchange event)
 
 ### 4. UI & UX
+
 - [x] Sidebar layout (bukan tab-based)
 - [x] Dark mode design dengan accent color (`#7C6AF7` ungu)
 - [x] Inter font (Google Fonts)
@@ -109,29 +114,30 @@ npm run build:all
 
 ## 🐛 Bug yang Sudah Diperbaiki
 
-| Bug | Perbaikan | Commit/Konversasi |
-|---|---|---|
-| `getNodeById` sync tidak tersedia di Figma | Ganti dengan `getNodeByIdAsync` | `cb2000ee` |
-| "Could not find the layers" error pada Focus button | Update routing message + async resolve | `f947de41` |
-| Font dropdown ter-clipped oleh panel boundary | Ubah positioning ke `fixed` menggunakan `getBoundingClientRect` | `2fa93419` |
-| Tombol "Add Group" tidak responsif | Perbaiki event handler dan try-catch di `addGroup()` | `4de07c37` + commit `49552c7` |
-| Generate button tidak update state setelah loading | Perbaiki `validateGenerateBtn()` untuk restore label | `4de07c37` |
+| Bug                                                 | Perbaikan                                                       | Commit/Konversasi             |
+| --------------------------------------------------- | --------------------------------------------------------------- | ----------------------------- |
+| `getNodeById` sync tidak tersedia di Figma          | Ganti dengan `getNodeByIdAsync`                                 | `cb2000ee`                    |
+| "Could not find the layers" error pada Focus button | Update routing message + async resolve                          | `f947de41`                    |
+| Font dropdown ter-clipped oleh panel boundary       | Ubah positioning ke `fixed` menggunakan `getBoundingClientRect` | `2fa93419`                    |
+| Tombol "Add Group" tidak responsif                  | Perbaiki event handler dan try-catch di `addGroup()`            | `4de07c37` + commit `49552c7` |
+| Generate button tidak update state setelah loading  | Perbaiki `validateGenerateBtn()` untuk restore label            | `4de07c37`                    |
 
 ---
 
 ## 🔧 State & Arsitektur Internal (ui.js)
 
 ### State Utama
-| Variabel | Tipe | Keterangan |
-|---|---|---|
-| `currentPlatform` | `string` | `'web'` atau `'mobile'` |
-| `shadeState` | `object` | Map `shade → { h, s, l, format }` untuk Colors panel |
-| `typoGroups` | `array` | Array of `{ id, name, styles[] }` untuk Typography panel |
-| `FIGMA_FONTS` | `array` | Cache font list dari Figma: `{ name, styles[], cat }` |
-| `selectedFont` | `string` | Nama font yang dipilih di dropdown |
-| `availableFontStyles` | `array` | Style yang tersedia untuk font yang dipilih |
-| `isCustomFontMode` | `boolean` | Apakah mode custom font aktif |
-| `customFontFamily` | `string` | Nama font custom yang diketik user |
+
+| Variabel              | Tipe      | Keterangan                                               |
+| --------------------- | --------- | -------------------------------------------------------- |
+| `currentPlatform`     | `string`  | `'web'` atau `'mobile'`                                  |
+| `shadeState`          | `object`  | Map `shade → { h, s, l, format }` untuk Colors panel     |
+| `typoGroups`          | `array`   | Array of `{ id, name, styles[] }` untuk Typography panel |
+| `FIGMA_FONTS`         | `array`   | Cache font list dari Figma: `{ name, styles[], cat }`    |
+| `selectedFont`        | `string`  | Nama font yang dipilih di dropdown                       |
+| `availableFontStyles` | `array`   | Style yang tersedia untuk font yang dipilih              |
+| `isCustomFontMode`    | `boolean` | Apakah mode custom font aktif                            |
+| `customFontFamily`    | `string`  | Nama font custom yang diketik user                       |
 
 ### Message Flow (UI ↔ Plugin)
 
@@ -159,6 +165,7 @@ npm run build:all
 | `error` | `message` | Toast error |
 
 ### Naming Convention Output Style
+
 - **Colors:** `{colorName}/{shade}` (e.g., `Purple/500`)
 - **Typography:** `{Platform}/{GroupName}/{size} {style}` atau `{Platform}/{GroupName}/{customName}` (e.g., `Web/Heading/32 SemiBold`)
 
@@ -169,16 +176,19 @@ npm run build:all
 Berikut adalah fitur/perbaikan yang belum diimplementasikan dan bisa diprioritaskan:
 
 ### High Priority
+
 - [ ] **Persist Typography Groups** — State `typoGroups` hilang setiap kali plugin ditutup. Perlu implementasi `figma.clientStorage` untuk menyimpan dan me-restore konfigurasi group.
 - [ ] **Drag-and-drop reorder groups** — Handle drag icon (`⋯`) sudah ada di UI tapi belum fungsional.
 
 ### Medium Priority
+
 - [ ] **Export/Import konfigurasi** — Kemampuan export setting typography sebagai JSON dan re-import.
 - [ ] **Preview typography "live"** — Tampilkan preview teks dengan font dan ukuran aktual di panel preview.
 - [ ] **Spacing: show valid items as well** — Saat ini hanya issues yang tampil; valid spacing items disembunyikan.
 - [ ] **Multiple color palettes** — Saat ini hanya bisa generate satu warna sekaligus.
 
 ### Low Priority
+
 - [ ] **Dark/light mode toggle** — Plugin menggunakan dark mode hardcoded.
 - [ ] **Undo support** — Tidak ada mekanisme undo setelah generate styles.
 - [ ] **Unit test** — Tidak ada test coverage sama sekali.
@@ -201,17 +211,20 @@ Berikut adalah fitur/perbaikan yang belum diimplementasikan dan bisa diprioritas
 
 ## 📅 Riwayat Pengembangan (Ringkas)
 
-| Tanggal | Milestone |
-|---|---|
-| 7 Apr 2026 | Implementasi line height 160% global untuk typography |
-| 16 Apr 2026 | Mulai build 8pt Spacing Detector, refactoring arsitektur modular |
-| 16 Apr 2026 | Fixing Spacing Checker: Focus & Fix fungsional, async API fix |
-| 17 Apr 2026 | Redesign UI: sidebar layout, Colors page redesign |
-| 17 Apr 2026 | Upgrade Typography Generator → Typography Style Builder (group-based) |
-| 17 Apr 2026 | Fixing font dropdown (searchable, z-index/positioning) |
-| 17 Apr 2026 | Fixing Add Group button, Generate button state |
-| 20 Apr 2026 | Commit `49552c7`: final bug fix Add Group button, push ke main |
+| Tanggal     | Milestone                                                                         |
+| ----------- | --------------------------------------------------------------------------------- |
+| 7 Apr 2026  | Implementasi line height 160% global untuk typography                             |
+| 16 Apr 2026 | Mulai build 8pt Spacing Detector, refactoring arsitektur modular                  |
+| 16 Apr 2026 | Fixing Spacing Checker: Focus & Fix fungsional, async API fix                     |
+| 17 Apr 2026 | Redesign UI: sidebar layout, Colors page redesign                                 |
+| 17 Apr 2026 | Upgrade Typography Generator → Typography Style Builder (group-based)             |
+| 17 Apr 2026 | Fixing font dropdown (searchable, z-index/positioning)                            |
+| 17 Apr 2026 | Fixing Add Group button, Generate button state                                    |
+| 20 Apr 2026 | Commit `49552c7`: final bug fix Add Group button, push ke main                    |
+| 20 Apr 2026 | Implementasi **Consistency Checker** dengan fitur baru **Rounded Corner Checker** |
+| 20 Apr 2026 | Penyesuaian UI Consistency Checker (Dynamic Icon & Multiselect Config)            |
+| 20 Apr 2026 | MEngubah naming dari Consistency ke Lint                                          |
 
 ---
 
-*Terakhir diperbarui: 20 April 2026 oleh Antigravity (AI Agent)*
+_Terakhir diperbarui: 20 April 2026 oleh Antigravity (AI Agent)_
