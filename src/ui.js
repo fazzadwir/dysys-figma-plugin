@@ -1,7 +1,7 @@
 // -------------------------------------------------
 //  STATE
 // -------------------------------------------------
-let currentPlatform = "web";
+let currentPlatform = "Web";
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
 // Per-shade editable state: { h, s, l, format }
@@ -26,10 +26,6 @@ function switchPanel(panel) {
 // -------------------------------------------------
 function setPlatform(p) {
   currentPlatform = p;
-  document.getElementById("btn-web").classList.toggle("active", p === "web");
-  document
-    .getElementById("btn-mobile")
-    .classList.toggle("active", p === "mobile");
 }
 
 // -------------------------------------------------
@@ -414,10 +410,6 @@ function generateId(prefix) {
   return prefix + "-" + Date.now() + "-" + ++_idCounter;
 }
 
-
-
-
-
 function getStyleOutputName(group, style) {
   if (style.customName && style.customName.trim()) {
     return group.name + "/" + style.customName.trim();
@@ -443,7 +435,7 @@ function addGroup() {
         {
           id: generateId("s"),
           size: 16,
-          lineHeight: 24,
+          lineHeight: "auto",
           style: "Regular",
           letterSpacing: 0,
           customName: "",
@@ -460,7 +452,7 @@ function addGroup() {
         input.select();
       }
     }, 50);
-  } catch(e) {
+  } catch (e) {
     showToast("Error adding group: " + String(e), "error");
   }
 }
@@ -491,7 +483,7 @@ function addStyle(groupId) {
   const style = {
     id: generateId("s"),
     size: last ? last.size : 16,
-    lineHeight: last ? last.lineHeight : 24,
+    lineHeight: last ? last.lineHeight : "auto",
     style: last ? last.style : "Regular",
     letterSpacing: 0,
     customName: "",
@@ -528,6 +520,32 @@ function deleteStyle(groupId, styleId) {
   renderPreview();
 }
 
+function validateLineHeight(groupId, styleId, value) {
+  const group = typoGroups.find(function (g) { return g.id === groupId; });
+  if (!group) return;
+  const style = group.styles.find(function (s) { return s.id === styleId; });
+  if (!style) return;
+
+  const raw = String(value).trim();
+  let finalVal = "auto";
+  
+  if (raw.endsWith('%')) {
+    const num = parseFloat(raw.replace('%', ''));
+    if (!isNaN(num)) {
+      finalVal = num + '%';
+    }
+  } else if (raw.toLowerCase() !== 'auto') {
+    const num = parseFloat(raw);
+    if (!isNaN(num)) {
+      finalVal = String(num);
+    }
+  }
+  
+  style.lineHeight = finalVal;
+  renderGroups();
+  renderPreview();
+}
+
 function updateStyleField(groupId, styleId, field, value) {
   const group = typoGroups.find(function (g) {
     return g.id === groupId;
@@ -537,11 +555,14 @@ function updateStyleField(groupId, styleId, field, value) {
     return s.id === styleId;
   });
   if (!style) return;
-  if (field === "size" || field === "lineHeight") {
+  if (field === "size") {
     style[field] = parseInt(value) || 0;
   } else if (field === "letterSpacing") {
     style[field] = parseFloat(value) || 0;
-  } else if (field === "style") { style[field] = value;
+  } else if (field === "lineHeight") {
+    style[field] = value;
+  } else if (field === "style") {
+    style[field] = value;
   } else {
     style[field] = value;
   }
@@ -554,7 +575,7 @@ function renderGroups() {
   if (!container) return;
   if (typoGroups.length === 0) {
     container.innerHTML =
-      '<div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:11px;">No groups yet&nbsp;&mdash; click <strong style="color:var(--accent)">Add Group</strong> to start building.</div>';
+      '<div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:11px;">No groups yet</div>';
     return;
   }
   container.innerHTML = typoGroups
@@ -610,41 +631,74 @@ function renderStyleRow(groupId, style) {
   let styleInput = "";
   let currentStyle = style.style || "Regular";
   if (isCustomFontMode) {
-    styleInput = '<input class="typo-input typo-input-name" type="text" value="' +
+    styleInput =
+      '<input class="typo-input typo-input-name" type="text" value="' +
       escapeHtml(currentStyle) +
       '" title="Font style" oninput="updateStyleField(\'' +
-      groupId + '\', \'' + style.id + '\', \'style\', this.value)"/>';
+      groupId +
+      "', '" +
+      style.id +
+      "', 'style', this.value)\"/>";
   } else {
     const styleOptions = availableFontStyles
       .map(function (w) {
-        return '<option value="' + escapeHtml(w) + '" ' + (currentStyle === w ? "selected" : "") + ">" + escapeHtml(w) + "</option>";
-      }).join("");
-    styleInput = '<select class="typo-select" title="Font style" onchange="updateStyleField(\'' +
-      groupId + '\', \'' + style.id + '\', \'style\', this.value)">' +
-      styleOptions + "</select>";
+        return (
+          '<option value="' +
+          escapeHtml(w) +
+          '" ' +
+          (currentStyle === w ? "selected" : "") +
+          ">" +
+          escapeHtml(w) +
+          "</option>"
+        );
+      })
+      .join("");
+    styleInput =
+      '<select class="typo-select" title="Font style" onchange="updateStyleField(\'' +
+      groupId +
+      "', '" +
+      style.id +
+      "', 'style', this.value)\">" +
+      styleOptions +
+      "</select>";
   }
 
   return (
-    '<div class="typo-style-row" id="style-' + style.id + '">' +
+    '<div class="typo-style-row" id="style-' +
+    style.id +
+    '">' +
     '<input class="typo-input typo-input-num" type="number" value="' +
     style.size +
     '" min="8" max="200" title="Font size (px)" oninput="updateStyleField(\'' +
-    groupId + "','" + style.id + "','size',this.value)\"/>" +
-    '<input class="typo-input typo-input-num" type="number" value="' +
-    style.lineHeight +
-    '" min="0" max="400" title="Line height (px)" oninput="updateStyleField(\'' +
-    groupId + "','" + style.id + "','lineHeight',this.value)\"/>" +
+    groupId +
+    "','" +
+    style.id +
+    "','size',this.value)\"/>" +
+    '<input class="typo-input typo-input-num" type="text" value="' +
+    escapeHtml(style.lineHeight) +
+    '" title="Line height (px, %, auto)" ' +
+    'oninput="updateStyleField(\'' + groupId + '\',\'' + style.id + '\',\'lineHeight\',this.value)" ' +
+    'onchange="validateLineHeight(\'' + groupId + '\',\'' + style.id + '\',this.value)"/>' +
     styleInput +
     '<input class="typo-input typo-input-name" type="text" value="' +
     escapeHtml(style.customName || "") +
     '" placeholder="e.g. Large" title="Custom name (optional)" oninput="updateStyleField(\'' +
-    groupId + "','" + style.id + "','customName',this.value)\"/>" +
+    groupId +
+    "','" +
+    style.id +
+    "','customName',this.value)\"/>" +
     '<div class="typo-style-actions">' +
     '<button class="btn-style-action btn-style-dupe" title="Duplicate" onclick="duplicateStyle(\'' +
-    groupId + "','" + style.id + "')\">" +
+    groupId +
+    "','" +
+    style.id +
+    "')\">" +
     '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="1" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 4V2.5A1.5 1.5 0 0 1 5.5 1H9.5A1.5 1.5 0 0 1 11 2.5V6.5A1.5 1.5 0 0 1 9.5 8H8" stroke="currentColor" stroke-width="1.3"/></svg></button>' +
     '<button class="btn-style-action btn-style-delete" title="Delete" onclick="deleteStyle(\'' +
-    groupId + "','" + style.id + "')\">" +
+    groupId +
+    "','" +
+    style.id +
+    "')\">" +
     '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M3.5 3V2h5v1M4.5 5.5v3M7.5 5.5v3M2 3l.6 6.3a.7.7 0 0 0 .7.7h5.4a.7.7 0 0 0 .7-.7L10 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
     "</div></div>"
   );
@@ -653,7 +707,6 @@ function renderStyleRow(groupId, style) {
 // -- Render preview --
 function renderPreview() {
   const list = document.getElementById("typo-preview-list");
-  const countEl = document.getElementById("typo-preview-count");
   if (!list) return;
 
   const allItems = [];
@@ -667,30 +720,26 @@ function renderPreview() {
     });
   });
 
-  if (countEl)
-    countEl.textContent =
-      allItems.length + " style" + (allItems.length !== 1 ? "s" : "");
-
   if (allItems.length === 0) {
     list.innerHTML =
       '<div class="typo-preview-empty">Add groups and styles above to see the output preview.</div>';
     return;
   }
 
-  const byGroup = {};
+  const byGroup = new Map();
   allItems.forEach(function (item) {
-    if (!byGroup[item.groupName]) byGroup[item.groupName] = [];
-    byGroup[item.groupName].push(item.name);
+    if (!byGroup.has(item.groupName)) byGroup.set(item.groupName, []);
+    byGroup.get(item.groupName).push(item.name);
   });
 
-  list.innerHTML = Object.entries(byGroup)
-    .map(function (entry) {
-      const groupName = entry[0];
+  list.innerHTML = Array.from(byGroup.entries())
+    .map(function (entry, index) {
       const names = entry[1];
+      const displayLabel = "Group " + (index + 1);
       return (
         '<div class="typo-preview-group">' +
         '<div class="typo-preview-group-label">' +
-        escapeHtml(groupName) +
+        escapeHtml(displayLabel) +
         "</div>" +
         names
           .map(function (name) {
@@ -724,9 +773,13 @@ let customFontFamily = "";
 
 function toggleCustomFontMode(checked) {
   isCustomFontMode = checked;
-  document.getElementById("standard-font-picker").style.display = checked ? "none" : "block";
-  document.getElementById("custom-font-picker").style.display = checked ? "block" : "none";
-  
+  document.getElementById("standard-font-picker").style.display = checked
+    ? "none"
+    : "block";
+  document.getElementById("custom-font-picker").style.display = checked
+    ? "block"
+    : "none";
+
   // Re-render rows to swap style inputs
   renderGroups();
   renderPreview();
@@ -741,7 +794,44 @@ function onCustomFontFamilyChange(val) {
 let selectedFont = "";
 let dropdownOpen = false;
 let availableFontStyles = ["Regular", "Medium", "Bold"];
+let currentFontItems = [];
+let fontFocusIndex = -1;
 const btnTypo = document.getElementById("btn-generate-typo");
+
+function updateFontFocusUI() {
+  const items = document.querySelectorAll("#font-list .font-item");
+  items.forEach(function (item, idx) {
+    if (idx === fontFocusIndex) {
+      item.classList.add("focused");
+      item.scrollIntoView({ block: "nearest" });
+    } else {
+      item.classList.remove("focused");
+    }
+  });
+}
+
+function handleFontSearchKey(e) {
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (fontFocusIndex < currentFontItems.length - 1) {
+      fontFocusIndex++;
+      updateFontFocusUI();
+    }
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (fontFocusIndex > 0) {
+      fontFocusIndex--;
+      updateFontFocusUI();
+    }
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (fontFocusIndex >= 0 && fontFocusIndex < currentFontItems.length) {
+      selectFont(currentFontItems[fontFocusIndex].name);
+    } else if (currentFontItems.length === 1) {
+      selectFont(currentFontItems[0].name);
+    }
+  }
+}
 
 function renderFontList(filter) {
   filter = filter || "";
@@ -751,6 +841,9 @@ function renderFontList(filter) {
         return f.name.toLowerCase().includes(filter.toLowerCase());
       })
     : FIGMA_FONTS;
+
+  currentFontItems = filtered;
+  fontFocusIndex = -1;
 
   if (filtered.length === 0) {
     list.innerHTML = '<div class="font-no-result">Font tidak ditemukan</div>';
@@ -783,7 +876,7 @@ function toggleFontDropdown() {
   if (dropdownOpen) {
     // Position the fixed dropdown relative to the trigger element
     const rect = trigger.getBoundingClientRect();
-    dropdown.style.top = (rect.bottom + 4) + "px";
+    dropdown.style.top = rect.bottom + 4 + "px";
     dropdown.style.left = rect.left + "px";
     dropdown.style.width = rect.width + "px";
     dropdown.style.display = "block";
@@ -809,12 +902,17 @@ function selectFont(name) {
   closeFontDropdown();
 
   // Update available styles based on the selected font
-  const found = FIGMA_FONTS.find(function(f) { return f.name === name; });
-  availableFontStyles = found && found.styles && found.styles.length > 0 ? found.styles : ["Regular"];
+  const found = FIGMA_FONTS.find(function (f) {
+    return f.name === name;
+  });
+  availableFontStyles =
+    found && found.styles && found.styles.length > 0
+      ? found.styles
+      : ["Regular"];
 
   // Clamp existing style rows to available styles
-  typoGroups.forEach(function(group) {
-    group.styles.forEach(function(s) {
+  typoGroups.forEach(function (group) {
+    group.styles.forEach(function (s) {
       if (!availableFontStyles.includes(s.style)) {
         s.style = availableFontStyles[0];
       }
@@ -836,7 +934,12 @@ function closeFontDropdown() {
 document.addEventListener("click", function (e) {
   const wrap = document.getElementById("font-search-wrap");
   const dropdown = document.getElementById("font-dropdown");
-  if (wrap && !wrap.contains(e.target) && dropdown && !dropdown.contains(e.target)) {
+  if (
+    wrap &&
+    !wrap.contains(e.target) &&
+    dropdown &&
+    !dropdown.contains(e.target)
+  ) {
     closeFontDropdown();
   }
 });
@@ -960,42 +1063,51 @@ renderPreview();
   let spHasSelection = false;
   let spResults = [];
   let radiusResults = [];
-  let currentFilter = 'margin';
+  let currentFilter = "margin";
   let gridRule = 8;
-  
+
   let checkState = { margin: true, radius: false };
-  
+
   window.setCheckerType = function (type) {
     const isNowActive = !checkState[type];
-    
+
     // Prevent unchecking the last active checker
-    if (!isNowActive && !checkState[type === 'margin' ? 'radius' : 'margin']) {
+    if (!isNowActive && !checkState[type === "margin" ? "radius" : "margin"]) {
       return;
     }
-    
+
     checkState[type] = isNowActive;
-    document.getElementById("checker-btn-" + type).classList.toggle("active", isNowActive);
-    
+    document
+      .getElementById("checker-btn-" + type)
+      .classList.toggle("active", isNowActive);
+
     updateEmptyStateIcon();
   };
-  
+
   function updateEmptyStateIcon() {
     const iconContainer = document.getElementById("spacing-empty-icon");
     if (!iconContainer) return;
 
     if (checkState.margin && checkState.radius) {
-      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/></svg>';
+      iconContainer.innerHTML =
+        '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/></svg>';
     } else if (checkState.margin) {
-      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/><line x1="4" y1="24" x2="44" y2="24" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/><line x1="24" y1="4" x2="24" y2="44" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/></svg>';
+      iconContainer.innerHTML =
+        '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3.5 2.5"/><line x1="4" y1="24" x2="44" y2="24" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/><line x1="24" y1="4" x2="24" y2="44" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/></svg>';
     } else if (checkState.radius) {
-      iconContainer.innerHTML = '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="12" stroke="currentColor" stroke-width="2"/></svg>';
+      iconContainer.innerHTML =
+        '<svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="12" stroke="currentColor" stroke-width="2"/></svg>';
     }
   }
-  
+
   window.setIssueFilter = function (type) {
     currentFilter = type;
-    document.getElementById("filter-margin").classList.toggle("active", type === 'margin');
-    document.getElementById("filter-radius").classList.toggle("active", type === 'radius');
+    document
+      .getElementById("filter-margin")
+      .classList.toggle("active", type === "margin");
+    document
+      .getElementById("filter-radius")
+      .classList.toggle("active", type === "radius");
     if (spResultsEl.style.display === "block") {
       renderCurrentIssues();
     }
@@ -1056,16 +1168,16 @@ renderPreview();
   function sendFixRadius(nodeId) {
     parent.postMessage(
       { pluginMessage: { type: "fix-radius", nodeId: nodeId, rule: gridRule } },
-      "*"
+      "*",
     );
   }
-  
+
   function sendCheckSelection() {
     parent.postMessage({ pluginMessage: { type: "check-selection" } }, "*");
   }
 
   function sendFixAll() {
-    if (currentFilter === 'radius') {
+    if (currentFilter === "radius") {
       const issues = radiusResults;
       if (issues.length === 0) return;
       btnFixAll.disabled = true;
@@ -1185,30 +1297,57 @@ renderPreview();
   function renderRadiusItem(record) {
     const div = document.createElement("div");
     div.className = "spacing-item is-issue";
-    
+
     let valueHTML = "";
     if (record.source === "single") {
-       valueHTML += '<span class="sp-value-pill invalid">' + record.value + 'px</span><span class="sp-value-arrow">&#8594;</span><span class="sp-value-suggest">' + record.suggestedValue + 'px</span>';
+      valueHTML +=
+        '<span class="sp-value-pill invalid">' +
+        record.value +
+        'px</span><span class="sp-value-arrow">&#8594;</span><span class="sp-value-suggest">' +
+        record.suggestedValue +
+        "px</span>";
     } else {
-       const corners = record.invalidCorners.map(function(c) {
-         const crn = c.corner.replace('Radius','');
-         return crn + " " + c.value + "px \u2192 " + c.suggestedValue + "px";
-       }).join(', ');
-       valueHTML += '<div class="sp-value-pill invalid" style="font-size:9px;white-space:normal;line-height:1.4">' + corners + '</div>';
+      const corners = record.invalidCorners
+        .map(function (c) {
+          const crn = c.corner.replace("Radius", "");
+          return crn + " " + c.value + "px \u2192 " + c.suggestedValue + "px";
+        })
+        .join(", ");
+      valueHTML +=
+        '<div class="sp-value-pill invalid" style="font-size:9px;white-space:normal;line-height:1.4">' +
+        corners +
+        "</div>";
     }
 
-    const actionBtn = '<button class="btn-sp-action btn-sp-fix-radius" data-node-id="' + record.nodeId + '">Fix to ' + record.rule + 'px Rule</button>';
+    const actionBtn =
+      '<button class="btn-sp-action btn-sp-fix-radius" data-node-id="' +
+      record.nodeId +
+      '">Fix to ' +
+      record.rule +
+      "px Rule</button>";
 
     div.innerHTML =
       '<div class="sp-item-top">' +
-      '<div class="sp-item-meta"><span class="sp-badge-source">RADIUS</span><span class="sp-badge-axis">' + record.source + '</span></div>' +
-      '<div class="sp-item-value">' + valueHTML + '</div></div>' +
+      '<div class="sp-item-meta"><span class="sp-badge-source">RADIUS</span><span class="sp-badge-axis">' +
+      record.source +
+      "</span></div>" +
+      '<div class="sp-item-value">' +
+      valueHTML +
+      "</div></div>" +
       '<div class="sp-item-layers">' +
-      '<span class="sp-layer-name" title="' + record.nodeName + '">' + truncate(record.nodeName) + '</span>' +
+      '<span class="sp-layer-name" title="' +
+      record.nodeName +
+      '">' +
+      truncate(record.nodeName) +
+      "</span>" +
       '<span class="sp-layer-sep">-</span>' +
-      '<span class="sp-layer-name" style="color:var(--text-muted)">' + record.nodeType + '</span>' +
+      '<span class="sp-layer-name" style="color:var(--text-muted)">' +
+      record.nodeType +
+      "</span>" +
       "</div>" +
-      '<div class="sp-item-actions">' + actionBtn + "</div>";
+      '<div class="sp-item-actions">' +
+      actionBtn +
+      "</div>";
 
     const fixBtn = div.querySelector(".btn-sp-fix-radius");
     if (fixBtn) {
@@ -1221,17 +1360,23 @@ renderPreview();
   }
 
   function renderCurrentIssues() {
-    const isRadius = currentFilter === 'radius';
-    document.getElementById("spacing-section-title").textContent = isRadius ? "Radius Issues" : "Margin Issues";
-    
+    const isRadius = currentFilter === "radius";
+    document.getElementById("spacing-section-title").textContent = isRadius
+      ? "Radius Issues"
+      : "Margin Issues";
+
     let issues = [];
     if (isRadius) {
       issues = radiusResults;
       btnFixAll.innerHTML = "✦ Fix Radius Issues";
       btnFixAll.disabled = issues.length === 0;
     } else {
-      issues = spResults.filter(function (r) { return !r.isValid; });
-      const fixable = issues.filter(function (r) { return r.source === "auto-layout"; });
+      issues = spResults.filter(function (r) {
+        return !r.isValid;
+      });
+      const fixable = issues.filter(function (r) {
+        return r.source === "auto-layout";
+      });
       btnFixAll.innerHTML = "✦ Fix Margin Issues";
       btnFixAll.disabled = fixable.length === 0;
     }
@@ -1240,9 +1385,11 @@ renderPreview();
       btnFixAll.innerHTML = "No Issues";
       btnFixAll.disabled = true;
     }
-    
+
     spBadgeIssues.textContent = issues.length;
-    spBadgeIssues.className = "spacing-section-badge " + (issues.length > 0 ? "badge-warn" : "badge-ok");
+    spBadgeIssues.className =
+      "spacing-section-badge " +
+      (issues.length > 0 ? "badge-warn" : "badge-ok");
     spSummaryEl.innerHTML =
       '<div class="sp-stat-card"><div class="sp-stat-value ' +
       (issues.length > 0 ? "warn" : "success") +
@@ -1256,7 +1403,9 @@ renderPreview();
     spListIssues.innerHTML = "";
     if (issues.length === 0) {
       spEmptyIssues.style.display = "block";
-      spEmptyIssues.textContent = isRadius ? "✓ All radius values are valid" : "✓ All margin values are on the grid";
+      spEmptyIssues.textContent = isRadius
+        ? "✓ All radius values are valid"
+        : "✓ All margin values are on the grid";
     } else {
       spEmptyIssues.style.display = "none";
       issues.forEach(function (r) {
@@ -1269,29 +1418,39 @@ renderPreview();
   function renderAllIssues(records, rRecords, grid) {
     spResults = records;
     radiusResults = rRecords;
-    
+
     // Choose which filter is active based on config and issues found
     if (checkState.margin && !checkState.radius) {
-      currentFilter = 'margin';
+      currentFilter = "margin";
     } else if (!checkState.margin && checkState.radius) {
-      currentFilter = 'radius';
+      currentFilter = "radius";
     } else if (checkState.margin && checkState.radius) {
-      const hasMarginIssues = spResults.some(function(r) { return !r.isValid; });
+      const hasMarginIssues = spResults.some(function (r) {
+        return !r.isValid;
+      });
       if (hasMarginIssues && radiusResults.length === 0) {
-        currentFilter = 'margin';
+        currentFilter = "margin";
       } else if (!hasMarginIssues && radiusResults.length > 0) {
-        currentFilter = 'radius';
+        currentFilter = "radius";
       } else {
-        currentFilter = 'margin'; // Default
+        currentFilter = "margin"; // Default
       }
     }
 
-    document.getElementById("filter-margin").style.display = checkState.margin ? "" : "none";
-    document.getElementById("filter-radius").style.display = checkState.radius ? "" : "none";
+    document.getElementById("filter-margin").style.display = checkState.margin
+      ? ""
+      : "none";
+    document.getElementById("filter-radius").style.display = checkState.radius
+      ? ""
+      : "none";
 
-    document.getElementById("filter-margin").classList.toggle("active", currentFilter === 'margin');
-    document.getElementById("filter-radius").classList.toggle("active", currentFilter === 'radius');
-    
+    document
+      .getElementById("filter-margin")
+      .classList.toggle("active", currentFilter === "margin");
+    document
+      .getElementById("filter-radius")
+      .classList.toggle("active", currentFilter === "radius");
+
     spEmptyState.style.display = "none";
     btnScanEmpty.style.display = "none";
     spResultsEl.style.display = "block";
@@ -1353,7 +1512,9 @@ renderPreview();
         b.textContent = "Fixed";
         b.disabled = true;
       });
-      const remaining = document.querySelectorAll(".btn-sp-fix-radius:not(.fixed)");
+      const remaining = document.querySelectorAll(
+        ".btn-sp-fix-radius:not(.fixed)",
+      );
       if (remaining.length === 0) {
         btnFixAll.disabled = true;
         btnFixAll.innerHTML = "All Fixed";
@@ -1373,7 +1534,9 @@ function validateGenerateBtn() {
   const hasActiveGroups = typoGroups.some(function (g) {
     return g.name.trim() && g.styles.length > 0;
   });
-  const isValidFont = isCustomFontMode ? customFontFamily.trim().length > 0 : !!selectedFont;
+  const isValidFont = isCustomFontMode
+    ? customFontFamily.trim().length > 0
+    : !!selectedFont;
   if (btnTypo) {
     btnTypo.disabled = !(isValidFont && hasActiveGroups);
     // Always restore button label when not actively generating

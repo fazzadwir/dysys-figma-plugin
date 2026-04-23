@@ -22,7 +22,7 @@ interface TypoStyle {
 interface TypographyStyleNew {
   id: string;
   size: number;
-  lineHeight: number;
+  lineHeight: string | number;
   weight: number;
   style?: string;
   letterSpacing: number;
@@ -314,10 +314,10 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
   else if (msg.type === 'generate-typography') {
     const isCustomFont = msg.isCustomFont as boolean;
     const fontFamily = msg.fontFamily as string;
-    const platform   = msg.platform as string;
-    const prefix     = platform === 'web' ? 'Web' : 'Mobile';
+    const platform   = (msg.platform as string) || '';
+    const prefix     = platform.trim() || 'Web';
 
-    type FlatStyle = { name: string; size: number; fontStyle: string; lh: number; ls: number };
+    type FlatStyle = { name: string; size: number; fontStyle: string; lh: string | number; ls: number };
     const stylesFlat: FlatStyle[] = [];
 
     const groups = msg.groups as TypographyGroup[] | undefined;
@@ -371,7 +371,22 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
         }
         style.fontName      = { family: fontFamily, style: s.fontStyle };
         style.fontSize      = s.size;
-        style.lineHeight    = { value: s.lh, unit: 'PIXELS' };
+        let finalLh: LineHeight = { unit: 'AUTO' };
+        const rawLh = String(s.lh).trim();
+
+        if (rawLh.endsWith('%')) {
+          const percentValue = parseFloat(rawLh.replace('%', ''));
+          if (!isNaN(percentValue)) {
+            finalLh = { unit: 'PERCENT', value: percentValue };
+          }
+        } else if (rawLh.toLowerCase() !== 'auto') {
+          const pxValue = parseFloat(rawLh);
+          if (!isNaN(pxValue)) {
+            finalLh = { unit: 'PIXELS', value: pxValue };
+          }
+        }
+
+        style.lineHeight    = finalLh;
         style.letterSpacing = { value: s.ls, unit: 'PIXELS' };
         successCount++;
       }

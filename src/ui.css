@@ -19,7 +19,8 @@
   --text-secondary: hsl(240, 7%, 70%);
   --text-muted: hsl(240, 6%, 65%);
   --accent: #7c6af7;
-  --accent-light: rgba(124, 106, 247, 0.15);
+  --dimmed-accent: #2a18a0;
+  --accent-light: rgba(64, 42, 210, 0.15);
   --accent-glow: rgba(124, 106, 247, 0.18);
   --accent-hover: #9181f9;
   --success: #4ade80;
@@ -250,7 +251,7 @@ label,
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 5px;
+  margin-bottom: 12px;
   letter-spacing: 0.1px;
 }
 
@@ -307,7 +308,7 @@ input[type="text"]:focus {
     transform 0.15s,
     border-color 0.2s;
   color: white;
-  background: var(--accent);
+  background: var(--dimmed-accent);
 }
 
 .color-pick-btn:hover {
@@ -616,7 +617,7 @@ input[type="text"]:focus {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 3px;
+  padding: 16px;
   gap: 3px;
   margin-bottom: 14px;
 }
@@ -636,7 +637,7 @@ input[type="text"]:focus {
 }
 
 .platform-btn.active {
-  background: var(--bg);
+  background: var(--accent);
   color: var(--text-primary);
   font-weight: 600;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
@@ -742,6 +743,11 @@ input[type="text"]:focus {
   cursor: pointer;
 }
 
+.font-search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
 .font-chevron {
   position: absolute;
   right: 10px;
@@ -822,7 +828,8 @@ input[type="text"]:focus {
   justify-content: space-between;
 }
 
-.font-item:hover {
+.font-item:hover,
+.font-item.focused {
   background: rgba(124, 106, 247, 0.12);
 }
 .font-item.selected {
@@ -1350,7 +1357,7 @@ input[type="text"]:focus {
 }
 
 .typo-setup-card .platform-toggle {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 /* Section header row */
@@ -1365,8 +1372,6 @@ input[type="text"]:focus {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* Add Group button */
