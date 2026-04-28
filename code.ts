@@ -1,7 +1,7 @@
 // DySys — Design System Generator Plugin
 // Main thread: has access to the Figma document via the figma global object.
 
-figma.showUI(__html__, { width: 440, height: 580 });
+figma.showUI(__html__, { width: 520, height: 580 });
 
 // ─────────────────────────────────────────────────
 //  TYPES
@@ -64,6 +64,21 @@ type RadiusIssue = {
   suggestedValue?: number;
 };
 
+interface FontIssue {
+  nodeId: string;
+  nodeName: string;
+  issueType: "No text style applied" | "Mixed text styles";
+  fontSize?: number;
+  fontName?: string;
+  lineHeight?: string;
+  hasMatch: boolean;
+  suggestedStyleId?: string;
+  suggestedStyleName?: string;
+}
+
+interface FlatStyle {
+  name: string;
+}
 
 // ─────────────────────────────────────────────────
 //  UTILS — HEX → RGB
@@ -81,7 +96,14 @@ function hexToRgb(hex: string): RGB {
 //  SPACING UTILITIES
 // ─────────────────────────────────────────────────
 function roundToGrid(value: number, grid: number): number {
-  return Math.round(value / grid) * grid;
+  // Round half UP: if value is at or above the midpoint between two multiples,
+  // snap to the upper multiple; strictly below midpoint → snap to lower.
+  // e.g. grid=4: value=6 → midpoint(4,8)=6 → upper=8 ✓
+  //      grid=8: value=3 → midpoint(0,8)=4 → lower=0 ✓
+  //      grid=8: value=5 → midpoint(0,8)=4 → upper=8 ✓
+  const lower = Math.floor(value / grid) * grid;
+  const midpoint = lower + grid / 2;
+  return value >= midpoint ? lower + grid : lower;
 }
 
 function isOffGrid(value: number, grid: number): boolean {
@@ -227,6 +249,82 @@ function scanNodeDeepForRadius(node: SceneNode, grid: number): RadiusIssue[] {
   return issues;
 }
 
+function scanNodeDeepForFont(node: SceneNode, localStyles: TextStyle[]): FontIssue[] {
+  let issues: FontIssue[] = [];
+  
+  if (node.type === 'TEXT') {
+    if (node.textStyleId === figma.mixed) {
+      issues.push({
+        nodeId: node.id,
+        nodeName: node.name,
+        issueType: "Mixed text styles",
+        hasMatch: false
+      });
+    } else if (node.textStyleId === "") {
+      const fontSize = typeof node.fontSize === 'number' ? node.fontSize : undefined;
+      const fontNameObj = node.fontName !== figma.mixed ? node.fontName : undefined;
+      const fontName = fontNameObj ? `${fontNameObj.family} ${fontNameObj.style}` : undefined;
+      let lineHeightStr = "";
+      if (node.lineHeight !== figma.mixed) {
+        if (node.lineHeight.unit === 'AUTO') lineHeightStr = "Auto";
+        else if (node.lineHeight.unit === 'PIXELS') lineHeightStr = `${Math.round(node.lineHeight.value)}px`;
+        else if (node.lineHeight.unit === 'PERCENT') lineHeightStr = `${Math.round(node.lineHeight.value)}%`;
+      }
+      
+      let matchedStyle: TextStyle | undefined = undefined;
+      
+      // Exact Match (semantic — unit-tolerant for zero values and equivalent line heights)
+      if (fontNameObj && fontSize !== undefined && node.lineHeight !== figma.mixed && node.letterSpacing !== figma.mixed) {
+        const nodeLineHeight = node.lineHeight;       // Narrowed to LineHeight (not mixed)
+        const nodeLetterSpacing = node.letterSpacing; // Narrowed to LetterSpacing (not mixed)
+
+        // Helper: letter spacing matches when values are both 0 (unit irrelevant) or strictly equal
+        const lsMatch = (a: LetterSpacing, b: LetterSpacing): boolean => {
+          if (a.value === 0 && b.value === 0) return true;
+          return a.unit === b.unit && a.value === b.value;
+        };
+
+        // Helper: line height matches semantically
+        const lhMatch = (a: LineHeight, b: LineHeight): boolean => {
+          if (a.unit === 'AUTO' && b.unit === 'AUTO') return true;
+          if (a.unit === 'AUTO' || b.unit === 'AUTO') return false;
+          // Both have values — compare unit + value strictly
+          return a.unit === b.unit && (a as { unit: string; value: number }).value === (b as { unit: string; value: number }).value;
+        };
+
+        matchedStyle = localStyles.find(ls => {
+          return ls.fontName.family === fontNameObj.family &&
+                 ls.fontName.style === fontNameObj.style &&
+                 ls.fontSize === fontSize &&
+                 lhMatch(ls.lineHeight, nodeLineHeight) &&
+                 lsMatch(ls.letterSpacing, nodeLetterSpacing);
+        });
+      }
+
+      issues.push({
+        nodeId: node.id,
+        nodeName: node.name,
+        issueType: "No text style applied",
+        fontSize,
+        fontName,
+        lineHeight: lineHeightStr,
+        hasMatch: !!matchedStyle,
+        suggestedStyleId: matchedStyle ? matchedStyle.id : undefined,
+        suggestedStyleName: matchedStyle ? matchedStyle.name : undefined
+      });
+    }
+  }
+
+  if ('children' in node && node.visible) {
+    const container = node as ChildrenMixin & SceneNode;
+    for (const child of container.children) {
+      issues = issues.concat(scanNodeDeepForFont(child, localStyles));
+    }
+  }
+
+  return issues;
+}
+
 // ─────────────────────────────────────────────────
 //  FONT RESOLUTION
 //  Resolves the actual Figma font style name for a
@@ -334,13 +432,23 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
           } else {
             outputName = `${prefix}/${group.name}/${s.size} ${styleLabel}`;
           }
-          stylesFlat.push({
+          const newStyle = {
             name: outputName,
             size: s.size,
             fontStyle: styleLabel,
             lh: s.lineHeight,
             ls: s.letterSpacing ?? 0,
-          });
+          };
+          const isDuplicate = stylesFlat.some(existingStyle => 
+            existingStyle.name === newStyle.name &&
+            existingStyle.size === newStyle.size &&
+            existingStyle.fontStyle === newStyle.fontStyle &&
+            existingStyle.lh === newStyle.lh &&
+            existingStyle.ls === newStyle.ls
+          );
+          if (!isDuplicate) {
+            stylesFlat.push(newStyle);
+          }
         }
       }
     }
@@ -418,14 +526,29 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
     }
     // grid: 4 or 8 (default 8) sent from UI toggle
     const grid = (msg.grid as number) === 4 ? 4 : 8;
-    const config = (msg.config as { margin: boolean, radius: boolean }) || { margin: true, radius: true };
+    const config = (msg.options as { margin: boolean, radius: boolean, font: boolean }) || { margin: true, radius: true, font: false };
     let records: SpacingRecord[] = [];
     let radiusIssues: RadiusIssue[] = [];
-    for (const node of selection) {
-      if (config.margin) records = records.concat(scanNodeDeep(node, grid));
-      if (config.radius) radiusIssues = radiusIssues.concat(scanNodeDeepForRadius(node, grid));
-    }
-    figma.ui.postMessage({ type: 'scan-result', records, radiusIssues, grid });
+    let fontIssues: FontIssue[] = [];
+    
+    // We can fetch local styles once here if needed for sync matching
+    let localStyles: TextStyle[] = [];
+    
+    const doScan = async () => {
+      if (config.font) {
+        localStyles = await figma.getLocalTextStylesAsync();
+      }
+      for (const node of selection) {
+        if (config.margin) records = records.concat(scanNodeDeep(node, grid));
+        if (config.radius) radiusIssues = radiusIssues.concat(scanNodeDeepForRadius(node, grid));
+        if (config.font)   fontIssues = fontIssues.concat(scanNodeDeepForFont(node, localStyles));
+      }
+      figma.ui.postMessage({ type: 'scan-result', records, radiusIssues, fontIssues, grid });
+    };
+    
+    doScan().catch(err => {
+      figma.ui.postMessage({ type: 'error', message: 'Scan failed: ' + String(err) });
+    });
   }
 
   // ══════════════════════════════════════════════
@@ -528,6 +651,40 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
   }
 
   // ══════════════════════════════════════════════
+  //  SPACING CHECKER — FIX FONT STYLE
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'fix-font-style') {
+    const nodeId = msg.nodeId as string;
+    const styleId = msg.styleId as string;
+
+    try {
+      const node = await figma.getNodeByIdAsync(nodeId);
+      if (!node || node.type !== 'TEXT') {
+        figma.ui.postMessage({ type: 'error', message: 'Text layer not found.'});
+        return;
+      }
+      
+      const textNode = node as TextNode;
+      if (textNode.fontName === figma.mixed) {
+        // Can't auto-resolve mixed text content style this way securely right now in this simple implementation
+        figma.ui.postMessage({ type: 'error', message: 'Cannot auto-apply to mixed styles inside text.'});
+        return;
+      }
+      if (textNode.hasMissingFont) {
+         figma.ui.postMessage({ type: 'error', message: 'Cannot apply style cleanly while fonts are missing.'});
+         return;
+      }
+
+      await figma.loadFontAsync(textNode.fontName);
+      await textNode.setTextStyleIdAsync(styleId);
+      
+      figma.ui.postMessage({ type: 'fix-font-done', nodeId });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'error', message: 'Fix font failed: ' + String(err)});
+    }
+  }
+
+  // ══════════════════════════════════════════════
   //  TYPOGRAPHY — GET ALL AVAILABLE FONTS
   // ══════════════════════════════════════════════
   else if (msg.type === 'get-available-fonts') {
@@ -549,6 +706,39 @@ figma.ui.onmessage = async (msg: { type: string; [key: string]: unknown }) => {
       figma.ui.postMessage({ type: 'available-fonts', fonts: families });
     } catch (_) {
       figma.ui.postMessage({ type: 'available-fonts', fonts: [] });
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  //  TYPOGRAPHY — GET EXISTING PARENT GROUPS
+  // ══════════════════════════════════════════════
+  else if (msg.type === 'get-existing-parents') {
+    try {
+      const styles = await figma.getLocalTextStylesAsync();
+      const parentsSet = new Set<string>();
+      const stylesByParent: Record<string, string[]> = {};
+
+      for (const style of styles) {
+        const parts = style.name.split('/');
+        if (parts.length > 1 && parts[0].trim()) {
+          const parent = parts[0].trim();
+          parentsSet.add(parent);
+          // Child name = everything after the first segment
+          const childName = parts.slice(1).join('/');
+          if (!stylesByParent[parent]) stylesByParent[parent] = [];
+          stylesByParent[parent].push(childName);
+        }
+      }
+
+      const parents = Array.from(parentsSet).sort((a, b) => a.localeCompare(b));
+      // Sort children alphabetically per parent
+      for (const key of Object.keys(stylesByParent)) {
+        stylesByParent[key].sort((a, b) => a.localeCompare(b));
+      }
+
+      figma.ui.postMessage({ type: 'existing-parents', parents, stylesByParent });
+    } catch (_) {
+      figma.ui.postMessage({ type: 'existing-parents', parents: [], stylesByParent: {} });
     }
   }
 

@@ -147,8 +147,45 @@
           <div class="panel-body">
             <!-- ── Setup ── -->
             <div class="form-group">
-              <label class="form-label">Platform Prefix</label>
-              <input type="text" id="platform-input" value="Web" oninput="setPlatform(this.value)" placeholder="e.g. Web, Mobile, Desktop" />
+              <label class="form-label">Parent Group</label>
+
+              <!-- Dropdown trigger -->
+              <div class="font-search-wrap" id="parent-search-wrap">
+                <div
+                  class="font-search-input"
+                  id="parent-trigger"
+                  tabindex="0"
+                  onclick="toggleParentDropdown()"
+                  onkeydown="
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      toggleParentDropdown();
+                    }
+                  "
+                >
+                  <span id="parent-display" style="color: var(--text-muted)">Select or create a parent…</span>
+                </div>
+                <span class="font-chevron" id="parent-chevron">▾</span>
+
+                <!-- Dropdown list -->
+                <div class="font-dropdown" id="parent-dropdown">
+                  <div class="font-list" id="parent-list"></div>
+                </div>
+              </div>
+
+              <!-- Inline input (shown only in 'create' mode) -->
+              <div id="parent-create-wrap" style="display:none; margin-top:8px;">
+                <input
+                  type="text"
+                  id="parent-new-input"
+                  placeholder="e.g. Web, Mobile, Brand"
+                  oninput="onNewParentInput(this.value)"
+                  autocomplete="off"
+                />
+                <div id="parent-warn">
+                  <span>⚠</span><span id="parent-warn-text"></span>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">
@@ -169,7 +206,12 @@
                     id="font-trigger"
                     tabindex="0"
                     onclick="toggleFontDropdown()"
-                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleFontDropdown();}"
+                    onkeydown="
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleFontDropdown();
+                      }
+                    "
                   >
                     <span id="font-display" style="color: var(--text-muted)"
                       >Select a font family</span
@@ -244,9 +286,7 @@
                 class="typo-builder-header"
                 style="margin-top: 18px; margin-bottom: 12px"
               >
-                <span class="form-label" style="margin-bottom: 0"
-                  >Output Preview</span
-                >
+                <span class="form-label" style="margin-bottom: 0">Preview</span>
                 <button
                   class="btn-generate-sm"
                   id="btn-generate-typo"
@@ -255,6 +295,10 @@
                 >
                   ✦ Generate Styles
                 </button>
+              </div>
+              <!-- Existing styles under selected parent (shown when existing parent selected) -->
+              <div id="typo-existing-children" style="display:none;">
+                <div class="typo-preview-section-label" id="typo-existing-label"></div>
               </div>
               <div class="typo-preview-list" id="typo-preview-list">
                 <!-- populated by JS -->
@@ -285,6 +329,8 @@
                 style="
                   flex-direction: column;
                   align-items: flex-start;
+                  justify-content: flex-start;
+                  gap: 8px;
                   margin-bottom: 0;
                 "
               >
@@ -365,20 +411,37 @@
                     </svg>
                     Corner
                   </button>
+                  <button
+                    class="checker-btn"
+                    id="checker-btn-font"
+                    onclick="setCheckerType('font')"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style="margin-bottom: 6px"
+                    >
+                      <path d="M5 19h14M9 15h6M12 5l-5 10M12 5l5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Font
+                  </button>
                 </div>
               </div>
 
               <div
                 class="grid-toggle-wrap"
+                id="rule-section-wrap"
                 style="
                   flex-direction: column;
                   align-items: flex-start;
+                  justify-content: flex-start;
+                  gap: 8px;
                   margin-bottom: 0;
                 "
               >
-                <span class="grid-toggle-label" style="margin-bottom: 8px"
-                  >Rule</span
-                >
+                <span class="grid-toggle-label">Rule</span>
                 <div class="grid-toggle">
                   <button
                     class="grid-btn"
@@ -494,6 +557,13 @@
                   onclick="setIssueFilter('radius')"
                 >
                   Radius
+                </button>
+                <button
+                  class="filter-chip"
+                  id="filter-font"
+                  onclick="setIssueFilter('font')"
+                >
+                  Font Style
                 </button>
               </div>
 

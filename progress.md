@@ -71,7 +71,9 @@ npm run build:all
 
 ### 2. Typography Panel (Typography Style Builder)
 
-- [x] Platform toggle (Web / Mobile) — prefix nama style Web/Mobile
+- [x] Input text bebas (Parent Group Name) untuk prefix style, menggantikan toggle Web/Mobile
+- [x] Auto-increment group name labeling (Group 1, Group 2, dst.) secara otomatis
+- [x] Line Height support yang lebih advanced (mendukung nilai 'auto', px, atau persentase %) dengan validasi real-time
 - [x] Font picker dengan **dropdown searchable** yang menampilkan font-font yang tersedia di Figma environment
 - [x] Mode "Use Custom Font" (checkbox toggle) untuk input font custom sebagai alternatif
 - [x] Sistem **group-based**: user mendefinisikan grup berisi beberapa style
@@ -109,6 +111,7 @@ npm run build:all
 - [x] Inter font (Google Fonts)
 - [x] Toast notification (success / error)
 - [x] Responsive panel scroll
+- [x] Lebar panel ditingkatkan (520px) agar memberi ruang lebih luas untuk input Typography Builder
 
 ---
 
@@ -121,6 +124,14 @@ npm run build:all
 | Font dropdown ter-clipped oleh panel boundary       | Ubah positioning ke `fixed` menggunakan `getBoundingClientRect` | `2fa93419`                    |
 | Tombol "Add Group" tidak responsif                  | Perbaiki event handler dan try-catch di `addGroup()`            | `4de07c37` + commit `49552c7` |
 | Generate button tidak update state setelah loading  | Perbaiki `validateGenerateBtn()` untuk restore label            | `4de07c37`                    |
+| Checker tidak bisa detect setelah tambah font checker | `setCheckerType` pakai logika radio (exclusive), diganti multi-select toggle | `23913366` |
+| Rule toggle (4px/8px) masih muncul saat hanya font dipilih | Kondisi `onlyFont` yang benar: sembunyikan hanya jika margin & radius keduanya off | `23913366` |
+| TS error: `'unit' does not exist on type 'unique symbol \| LetterSpacing'` | TypeScript kehilangan type narrowing di dalam closure `.find()` — fix: ekstrak `node.letterSpacing` ke `const` lokal sebelum callback | `23913366` |
+| TS error: `'unit' does not exist on type 'unique symbol \| LineHeight'` | Sama dengan di atas — ekstrak `node.lineHeight` ke `const nodeLineHeight` sebelum closure | `23913366` |
+| `Fix font failed: Cannot call set_textStyleId with documentAccess: dynamic-page` | Ganti `textNode.textStyleId = styleId` (sync) dengan `await textNode.setTextStyleIdAsync(styleId)` | `23913366` |
+| Font style "No matching style found" padahal style ada | Comparison unit strict gagal: DySys style pakai `PIXELS: 0` untuk letterSpacing, tapi text node pakai `PERCENT: 0`. Fix: semantic match — `0` cocok terlepas unit, `lhMatch` & `lsMatch` helper | `23913366` |
+| Card "8px grid rule" muncul saat filter Font | Sembunyikan card grid rule di `spSummaryEl` ketika `isFont === true` | `23913366` |
+| Pembulatan radius/margin tidak konsisten di midpoint | `Math.round` tidak deterministik untuk floating-point midpoint. Ganti dengan explicit "round half UP": jika `value >= lower + grid/2` → upper, else → lower | `23913366` |
 
 ---
 
@@ -130,7 +141,7 @@ npm run build:all
 
 | Variabel              | Tipe      | Keterangan                                               |
 | --------------------- | --------- | -------------------------------------------------------- |
-| `currentPlatform`     | `string`  | `'web'` atau `'mobile'`                                  |
+| `currentPlatform`     | `string`  | Input text bebas untuk prefix (sebelumnya toggle 'web' atau 'mobile') |
 | `shadeState`          | `object`  | Map `shade → { h, s, l, format }` untuk Colors panel     |
 | `typoGroups`          | `array`   | Array of `{ id, name, styles[] }` untuk Typography panel |
 | `FIGMA_FONTS`         | `array`   | Cache font list dari Figma: `{ name, styles[], cat }`    |
@@ -224,7 +235,10 @@ Berikut adalah fitur/perbaikan yang belum diimplementasikan dan bisa diprioritas
 | 20 Apr 2026 | Implementasi **Consistency Checker** dengan fitur baru **Rounded Corner Checker** |
 | 20 Apr 2026 | Penyesuaian UI Consistency Checker (Dynamic Icon & Multiselect Config)            |
 | 20 Apr 2026 | MEngubah naming dari Consistency ke Lint                                          |
+| 23 Apr 2026 | Refactor Typography Builder: Freeform Parent Group Name, Group autosync, Advanced Line Height |
+| 24 Apr 2026 | Pelebaran UI panel menjadi 520px dan penyesuaian label UI Typography              |
+| 27 Apr 2026 | Implementasi **Font Style Checker** pada fitur Design Lint (deteksi custom text, auto-fix exact match) |
 
 ---
 
-_Terakhir diperbarui: 20 April 2026 oleh Antigravity (AI Agent)_
+_Terakhir diperbarui: 28 April 2026 oleh Antigravity (AI Agent)_

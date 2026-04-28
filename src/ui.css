@@ -847,6 +847,25 @@ input[type="text"]:focus {
   color: var(--text-muted);
 }
 
+/* ── Parent duplicate warning ── */
+#parent-warn {
+  display: none;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 9px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
+#parent-warn.visible {
+  display: flex;
+}
+
 /* ════════════════════════════════
    SPACING CHECKER
 ════════════════════════════════ */
@@ -856,7 +875,6 @@ input[type="text"]:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
 }
 
 .grid-toggle-label {
@@ -1527,7 +1545,7 @@ input[type="text"]:focus {
 /* Column header row */
 .typo-styles-cols-header {
   display: grid;
-  grid-template-columns: 48px 52px 84px 1fr 44px;
+  grid-template-columns: 42px 52px 52px 84px 1fr 44px;
   gap: 5px;
   padding: 0 2px 4px;
   border-bottom: 1px solid var(--border);
@@ -1545,7 +1563,7 @@ input[type="text"]:focus {
 /* Style row */
 .typo-style-row {
   display: grid;
-  grid-template-columns: 48px 52px 84px 1fr 44px;
+  grid-template-columns: 42px 52px 52px 84px 1fr 44px;
   gap: 5px;
   align-items: center;
   padding: 3px 2px;
@@ -1724,6 +1742,17 @@ input[type="text"]:focus {
   color: var(--text-primary);
   font-family: "SF Mono", "Fira Code", monospace;
   letter-spacing: 0.1px;
+}
+
+/* ── Existing children preview ── */
+/* ── Existing children section label ── */
+.typo-preview-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 0 6px 0;
 }
 
 /* ════════════════════════════════
